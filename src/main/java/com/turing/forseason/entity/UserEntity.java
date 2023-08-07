@@ -1,109 +1,62 @@
 package com.turing.forseason.entity;
 
+import com.turing.forseason.domain.OauthEnums.Role;
+
 import javax.persistence.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import lombok.*;
+
 
 @Entity
+@Getter
+@Builder
+@AllArgsConstructor
+@NoArgsConstructor
 @Table(name = "User")
 public class UserEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "user_id")
-    private int userId;
+    @Column(name="user_id")
+    private Long userId;
 
-    @Column(name = "user_name", nullable = false, length = 10)
+    @Column(nullable = false)
     private String userName;
 
-    @Column(name = "user_email", unique = true, nullable = false, length = 50)
+    @Column(nullable = false)
     private String userEmail;
 
-    @Column(name = "user_password", nullable = false, length = 30)
-    private String userPassword;
 
-    @Column(name = "user_nickname", nullable = false, length = 10)
+    @Column(nullable = false)
     private String userNickname;
 
-    @Column(name = "user_phone_number", nullable = false, length = 15)
-    private String userPhoneNumber;
+    @Column(nullable = false)
+    private Long userBoardNum;
 
-    @Column(name = "user_profile_picture", columnDefinition = "TEXT")
-    private String userProfilePicture;
+    @Column(nullable = false)
+    private Long userCommentNum;
 
-    @Column(name = "user_board_num", columnDefinition = "INT DEFAULT 0")
-    private int userBoardNum;
+    //Oauth login
 
-    @Column(name = "user_comment_num", columnDefinition = "INT DEFAULT 0")
-    private int userCommentNum;
+    @Column(name = "kakao_id")
+    private Long kakao_id;
 
-    public int getUserId() {
-        return userId;
-    }
+    @Column(name = "image_url")
+    private String image;
 
-    public void setUserId(int userId) {
-        this.userId = userId;
-    }
+    @Column(nullable = false, unique = true)
+    private String nickname;
 
-    public String getUserName() {
-        return userName;
-    }
+    @Column(nullable = false, name = "my_role", updatable = false)
+    @Enumerated(EnumType.STRING)
+    private Role myRole;
 
-    public void setUserName(String userName) {
-        this.userName = userName;
-    }
-
-    public String getUserEmail() {
-        return userEmail;
-    }
-
-    public void setUserEmail(String userEmail) {
-        this.userEmail = userEmail;
-    }
-
-    public String getUserPassword() {
-        return userPassword;
-    }
-
-    public void setUserPassword(String userPassword) {
-        this.userPassword = userPassword;
-    }
-
-    public String getUserNickname() {
-        return userNickname;
-    }
-
-    public void setUserNickname(String userNickname) {
-        this.userNickname = userNickname;
-    }
-
-    public String getUserPhoneNumber() {
-        return userPhoneNumber;
-    }
-
-    public void setUserPhoneNumber(String userPhoneNumber) {
-        this.userPhoneNumber = userPhoneNumber;
-    }
-
-    public String getUserProfilePicture() {
-        return userProfilePicture;
-    }
-
-    public void setUserProfilePicture(String userProfilePicture) {
-        this.userProfilePicture = userProfilePicture;
-    }
-
-    public int getUserBoardNum() {
-        return userBoardNum;
-    }
-
-    public void setUserBoardNum(int userBoardNum) {
-        this.userBoardNum = userBoardNum;
-    }
-
-    public int getUserCommentNum() {
-        return userCommentNum;
-    }
-
-    public void setUserCommentNum(int userCommentNum) {
-        this.userCommentNum = userCommentNum;
+    public List<String> getRoleList(){
+        if(this.myRole.getValue().length() > 0){
+            return Arrays.asList(this.myRole.getValue());
+        }
+        return new ArrayList<>();
     }
 }
