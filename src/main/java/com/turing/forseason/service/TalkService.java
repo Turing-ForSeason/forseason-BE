@@ -109,7 +109,7 @@ public class TalkService {
     }
 
     public String addUser(String location, String userUUID, int userId) {
-        TalkRoom talkRoom = talkRoomMap.get(location);
+        TalkRoom talkRoom = findByLocation(location);
         talkRoom.getUserList().put(userUUID, userId);
         talkRoom.setUserCount(talkRoom.getUserList().size());
 
