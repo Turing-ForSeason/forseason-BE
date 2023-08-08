@@ -6,11 +6,11 @@ import javax.persistence.*;
 import java.time.LocalDateTime;
 import java.util.Date;
 
-@Builder
-@NoArgsConstructor
-@AllArgsConstructor
 @Entity
-@Data
+@Getter
+@Builder
+@AllArgsConstructor
+@NoArgsConstructor
 @Table(name = "Talk")
 public class TalkEntity {
 
@@ -37,60 +37,5 @@ public class TalkEntity {
     @Column(name = "talk_location", nullable = false, length = 20)
     private String talkLocation;
 
-    public int getTalkUserId() {
-        return talkUserId;
-    }
-
-    public void setTalkUserId(int talkUserId) {
-        this.talkUserId = talkUserId;
-    }
-
-    public int getTalkId() {
-        return talkId;
-    }
-
-    public void setTalkId(int talkId) {
-        this.talkId = talkId;
-    }
-
-    public String getTalkContents() {
-        return talkContents;
-    }
-
-    public void setTalkContents(String talkContents) {
-        this.talkContents = talkContents;
-    }
-
-    public LocalDateTime getTalkDate() {
-        return talkDate;
-    }
-
-    public void setTalkDate(LocalDateTime talkDate) {
-        this.talkDate = talkDate;
-    }
-
-    public String getTalkUserNickname() {
-        return talkUserNickname;
-    }
-
-    public void setTalkUserNickname(String talkUserNickname) {
-        this.talkUserNickname = talkUserNickname;
-    }
-
-    public String getTalkUserProfilePicture() {
-        return talkUserProfilePicture;
-    }
-
-    public void setTalkUserProfilePicture(String talkUserProfilePicture) {
-        this.talkUserProfilePicture = talkUserProfilePicture;
-    }
-
-    public String getTalkLocation() {
-        return talkLocation;
-    }
-
-    public void setTalkLocation(String talkLocation) {
-        this.talkLocation = talkLocation;
-    }
 }
 

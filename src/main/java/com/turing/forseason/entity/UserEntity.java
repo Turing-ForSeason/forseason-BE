@@ -33,7 +33,7 @@ public class UserEntity {
     @Column(name = "user_phone_number", nullable = false, length = 15)
     private String userPhoneNumber;
 
-    @Column(name = "user_profile_picture", nullable = true, columnDefinition = "TEXT")
+    @Column(name = "user_profile_picture",  columnDefinition = "TEXT")
     private String userProfilePicture;
 
     @Column(name = "user_board_num", columnDefinition = "INT DEFAULT 0")

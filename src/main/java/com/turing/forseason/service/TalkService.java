@@ -1,9 +1,11 @@
 package com.turing.forseason.service;
 
-import com.turing.forseason.dto.MessageDTO;
+import com.turing.forseason.dto.Message;
 import com.turing.forseason.dto.TalkRoom;
 import com.turing.forseason.entity.TalkEntity;
 import com.turing.forseason.entity.UserEntity;
+import com.turing.forseason.global.errorExeption.CustomExeption;
+import com.turing.forseason.global.errorExeption.ErrorCode;
 import com.turing.forseason.mapper.TalkRooms;
 import com.turing.forseason.repository.TalkRepository;
 import com.turing.forseason.repository.UserRepository;
@@ -32,13 +34,13 @@ public class TalkService {
         return talkList;
     }
 
-    public List<MessageDTO> talk2Messages(String location, String userUUID, List<TalkEntity> talkList) {
+    public List<Message> talk2Messages(String location, String userUUID, List<TalkEntity> talkList) {
         //talk->message 로 바꾸기.
         int userId = getUserId(location, userUUID);
-        List<MessageDTO> messageList = new ArrayList<>();
+        List<Message> messageList = new ArrayList<>();
 
         for (TalkEntity item : talkList) {
-            MessageDTO message= MessageDTO.builder()
+            Message message= Message.builder()
                     .location(location)
                     .content(item.getTalkContents())
                     .userNickname(item.getTalkUserNickname())
@@ -46,9 +48,9 @@ public class TalkService {
                     .date(item.getTalkDate())
                     .build();
             if (item.getTalkUserId() == userId) {
-                message.setType(MessageDTO.MessageType.MINE);
+                message.setType(Message.MessageType.MINE);
             }else{
-                message.setType(MessageDTO.MessageType.TALK);
+                message.setType(Message.MessageType.TALK);
             }
             messageList.add(message);
         }
@@ -68,23 +70,27 @@ public class TalkService {
 //        return initMessage;
 //    }
 
-    public TalkEntity storeTalkEntity(MessageDTO messageDTO){
-        int userId = getUserId(messageDTO.getLocation(), messageDTO.getUserUUID());
+    public TalkEntity storeTalkEntity(Message message){
+        int userId = getUserId(message.getLocation(), message.getUserUUID());
         //DB에 저장
         TalkEntity talkEntity = TalkEntity.builder()
                 .talkUserId(userId)
-                .talkContents(messageDTO.getContent())
-                .talkDate(messageDTO.getDate())
-                .talkUserNickname(messageDTO.getUserNickname())
-                .talkUserProfilePicture(messageDTO.getUserProfilePicture())
-                .talkLocation(messageDTO.getLocation())
+                .talkContents(message.getContent())
+                .talkDate(message.getDate())
+                .talkUserNickname(message.getUserNickname())
+                .talkUserProfilePicture(message.getUserProfilePicture())
+                .talkLocation(message.getLocation())
                 .build();
         return talkRepository.save(talkEntity);
     }
 
     public UserEntity getUser(String location, String userUUID) {
         int userId = getUserId(location, userUUID);
-        return userRepository.findById(userId).get();
+        Optional<UserEntity> user = userRepository.findById(userId);
+
+        if(user.isEmpty()) throw new CustomExeption(ErrorCode.TALK_USER_ENTITY_NOT_FOUND);
+
+        return user.get();
     }
 
     public List<TalkRoom> findAllRoom(){
@@ -96,7 +102,10 @@ public class TalkService {
 
     public TalkRoom findByLocation(String location){
         //채팅방 이름으로 찾기
-        return talkRoomMap.get(location);
+        TalkRoom talkRoom = talkRoomMap.get(location);
+        if(talkRoom==null) throw new CustomExeption(ErrorCode.TALK_ROOM_NOT_FOUND);
+
+        return talkRoom;
     }
 
     public String addUser(String location, String userUUID, int userId) {
@@ -109,15 +118,18 @@ public class TalkService {
 
     public void delUser(String location, String userUUID){
         //채팅방 유저 리스트에서 삭제
-        TalkRoom talkRoom = talkRoomMap.get(location);
+        TalkRoom talkRoom = findByLocation(location);
         talkRoom.getUserList().remove(userUUID);
         talkRoom.setUserCount(talkRoom.getUserList().size());
     }
 
     public int getUserId(String location, String userUUID){
         //채팅방에서 userId 조회
-        TalkRoom talkRoom = talkRoomMap.get(location);
-        return talkRoom.getUserList().get(userUUID);
+        TalkRoom talkRoom = findByLocation(location);
+        Integer userID = talkRoom.getUserList().get(userUUID);
+        if(userID==null) throw new CustomExeption(ErrorCode.TALK_USER_NOT_FOUND);
+
+        return userID;
     }
 
 //    public ArrayList<Integer> getUserList(String location){

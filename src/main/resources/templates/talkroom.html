@@ -101,7 +101,7 @@
     //상세한 이유는 TalkRoomController의 deleteUser 메서드 확인 바람
     $.ajax({
       type: 'post',
-      url: '/delUser',
+      url: 'talk/deleteUser',
       data: {location: roomLocation, userUUID: userUUID},
       dataType: 'json',
       success: function (){
@@ -117,7 +117,7 @@
   function onMessageReceived(payload){
     // 메세지를 받았을 때 처리하는 로직
 
-    // chat의 꼴 (==messageDTO)
+    // chat의 꼴 (==message)
     // var chat={
     //     type,
     //     userUUID,
@@ -279,11 +279,11 @@
     // userCount를 갱신해주는 함수
     $.ajax({
       type: 'get',
-      url: '/userCount',
+      url: '/talk/userCount',
       data: {location: roomLocation},
       dataType: 'json',
       success: function (response) {
-        document.getElementById('userCount').innerText = response.userCount + "명 참여중";
+        document.getElementById('userCount').innerText = response.result.userCount + "명 참여중";
       },
       error: function (error) {
         console.error('getUserCount 에러', error);
@@ -295,13 +295,13 @@
     // page를 이용하여 이전 채팅 기록들을 DB로부터 가져오는 함수
     $.ajax({
       type: 'get',
-      url: '/getTalks',
+      url: '/talk/getTalks',
       data: {page: page, location:roomLocation, userUUID: userUUID},
       dataType: 'json',
       success: function (response){
         console.log("getTalkRecords 성공");
 
-        for(const chat of response) {
+        for(const chat of response.result) {
 
           if (chat.type === 'MINE') {
             makeDateBar(chat);
@@ -334,12 +334,12 @@
     // 사용자의 닉네임과 프사를 DB로부터 불러와서 변수에 저장해줌
     $.ajax({
       type: 'get',
-      url: '/initUser',
+      url: '/talk/initUser',
       data: {location: roomLocation, userUUID: userUUID},
       dataType: 'json',
       success: function (response){
-        userNickname = response.userNickname;
-        userProfilePicture = response.userProfilePicture;
+        userNickname = response.result.userNickname;
+        userProfilePicture = response.result.userProfilePicture;
       },
       error: function (error){
         console.error('initUser 에러', error);

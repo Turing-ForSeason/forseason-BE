@@ -1,19 +1,18 @@
 package com.turing.forseason.controller;
 
-import com.turing.forseason.dto.MessageDTO;
+import com.turing.forseason.dto.Message;
 import com.turing.forseason.entity.TalkEntity;
 import com.turing.forseason.entity.UserEntity;
+import com.turing.forseason.global.dto.ApplicationResponse;
+import com.turing.forseason.global.errorExeption.ErrorCode;
 import com.turing.forseason.service.TalkService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.event.EventListener;
 import org.springframework.http.ResponseEntity;
-import org.springframework.lang.Nullable;
-import org.springframework.messaging.MessageHeaders;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.messaging.simp.SimpMessageHeaderAccessor;
 import org.springframework.messaging.simp.SimpMessageSendingOperations;
-import org.springframework.messaging.simp.SimpMessageType;
 import org.springframework.messaging.simp.stomp.StompHeaderAccessor;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.socket.messaging.SessionDisconnectEvent;
@@ -30,12 +29,12 @@ public class TalkController {
     private final TalkService talkService;
 
     @MessageMapping("/talk/enter")
-    public void enterUser(@Payload MessageDTO messageDTO, SimpMessageHeaderAccessor headerAccessor){
+    public void enterUser(@Payload Message message, SimpMessageHeaderAccessor headerAccessor){
         System.out.println("enterUser");
-        System.out.println("messageDTO = " + messageDTO);
+        System.out.println("message = " + message);
 
-        String location = messageDTO.getLocation();
-        String userUUID = messageDTO.getUserUUID();
+        String location = message.getLocation();
+        String userUUID = message.getUserUUID();
         String sessionId = headerAccessor.getSessionId();
 
         //소켓 세션에 유저 정보 저장
@@ -43,7 +42,7 @@ public class TalkController {
         headerAccessor.getSessionAttributes().put("location", location);
 
         //type=ENTER 인 메세지 발송 (이거로 userCount 갱신 예정.)
-        tmp.convertAndSend("/sub/talk/room/"+ messageDTO.getLocation(),messageDTO);
+        tmp.convertAndSend("/sub/talk/room/"+ message.getLocation(), message);
     }
 
     // 리액트 환경 때문에 추가.
@@ -64,13 +63,13 @@ public class TalkController {
 //    }
 
     @MessageMapping("/talk/sendMessage")
-    public void sendMessage(@Payload MessageDTO messageDTO){
+    public void sendMessage(@Payload Message message){
         System.out.println("sendMessage");
-        System.out.println("messageDTO = " + messageDTO);
+        System.out.println("messageDTO = " + message);
 
-        messageDTO.setDate(LocalDateTime.now());
-        talkService.storeTalkEntity(messageDTO);
-        tmp.convertAndSend("/sub/talk/room/"+ messageDTO.getLocation(),messageDTO);
+        message.setDate(LocalDateTime.now());
+        talkService.storeTalkEntity(message);
+        tmp.convertAndSend("/sub/talk/room/"+ message.getLocation(), message);
     }
 
     @EventListener
@@ -84,40 +83,39 @@ public class TalkController {
         //채팅방 유저리스트에서 삭제(by UUID)
         talkService.delUser(location,userUUID);
 
-        MessageDTO messageDTO = MessageDTO.builder().type(MessageDTO.MessageType.LEAVE).build();
+        Message message = Message.builder().type(Message.MessageType.LEAVE).build();
 
         //type=LEAVE 인 메세지 발송 (이거로 userCount 갱신 예정.)
-        tmp.convertAndSend("/sub/talk/room/" + location, messageDTO);
+        tmp.convertAndSend("/sub/talk/room/" + location, message);
     }
 
     //userNickname과 userProfilePicture를 DB에서 가져와서 초기화 해주기
-    @GetMapping("/initUser")
+    @GetMapping("/talk/initUser")
     @ResponseBody
-    public ResponseEntity<?> initUser(@RequestParam("location") String location, @RequestParam("userUUID") String userUUID) {
+    public ApplicationResponse<Map<String, String>> initUser(@RequestParam("location") String location, @RequestParam("userUUID") String userUUID) {
         System.out.println("initUser");
         System.out.println("location : " + location);
         System.out.println("userUUID : " + userUUID);
 
         UserEntity user = talkService.getUser(location, userUUID);
-
         Map<String, String> response = new HashMap<>();
 
         response.put("userNickname", user.getUserNickname());
         response.put("userProfilePicture", user.getUserProfilePicture());
 
-        return ResponseEntity.ok(response);
+        return ApplicationResponse.ok(ErrorCode.TALK_SUCCESS, response);
     }
 
     //이전 기록들 불러오기
-    @GetMapping("/getTalks")
+    @GetMapping("/talk/getTalks")
     @ResponseBody
-    public ResponseEntity<?> getTalks(@RequestParam("page") int page, @RequestParam("location") String location,
+    public ApplicationResponse<List<Message>> getTalks(@RequestParam("page") int page, @RequestParam("location") String location,
                                       @RequestParam("userUUID") String userUUID) {
         System.out.println("getTalks");
         System.out.println("page = " + page + ", location = " + location + ", userUUID = " + userUUID);
         List<TalkEntity> talkList = talkService.getTalks(location, page);
-        List<MessageDTO> messageList = talkService.talk2Messages(location, userUUID, talkList);
+        List<Message> messageList = talkService.talk2Messages(location, userUUID, talkList);
 
-        return ResponseEntity.ok(messageList);
+        return ApplicationResponse.ok(ErrorCode.TALK_SUCCESS, messageList);
     }
 }

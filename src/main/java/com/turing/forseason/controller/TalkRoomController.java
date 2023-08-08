@@ -1,6 +1,8 @@
 package com.turing.forseason.controller;
 
 import com.turing.forseason.dto.TalkRoom;
+import com.turing.forseason.global.dto.ApplicationResponse;
+import com.turing.forseason.global.errorExeption.ErrorCode;
 import com.turing.forseason.mapper.TalkRooms;
 import com.turing.forseason.service.TalkService;
 import lombok.RequiredArgsConstructor;
@@ -56,21 +58,22 @@ public class TalkRoomController {
     }
 
     //Ajax 와 매핑된 메서드. 유저수를 갱신하는 역할.
-    @GetMapping("/userCount")
+    @GetMapping("/talk/userCount")
     @ResponseBody
-    public ResponseEntity<?> getUserCount(@RequestParam("location") String location) {
+    public ApplicationResponse<Map<String, Long>> getUserCount(@RequestParam("location") String location) {
 //        TalkRoom talkRoom = TalkRooms.getInstance().getTalkRoomMap().get(location);
         TalkRoom talkRoom = talkService.findByLocation(location);
 
         Map<String, Long> response = new HashMap<>();
         response.put("userCount", talkRoom.getUserCount());
 
-        return ResponseEntity.ok(response);
+//        return ResponseEntity.ok(response);
+        return ApplicationResponse.ok(ErrorCode.TALK_SUCCESS, response);
     }
 
     //roomDetail에서 구현상 불가피하게 STOMP소켓 연결전에 UserList에 유저를 추가했으므로,
     //만일 STOMP 연결 실패시 Ajax통신으로 해당 사용자 삭제.
-    @PostMapping("/delUser")
+    @PostMapping("/talk/deleteUser")
     @ResponseBody
     public void deleteUser(@RequestBody Map<String,String> userInfo) {
         //소켓 연결 오류시 userList 에서 user 삭제.

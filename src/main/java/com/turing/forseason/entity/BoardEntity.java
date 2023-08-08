@@ -1,9 +1,18 @@
 package com.turing.forseason.entity;
 
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+
 import javax.persistence.*;
 import java.util.Date;
 
 @Entity
+@Getter
+@Builder
+@AllArgsConstructor
+@NoArgsConstructor
 @Table(name = "Board")
 public class BoardEntity {
 
@@ -45,100 +54,5 @@ public class BoardEntity {
     @Column(name = "board_location", length = 20)
     private String boardLocation;
 
-    public int getBoardId() {
-        return boardId;
-    }
-
-    public void setBoardId(int boardId) {
-        this.boardId = boardId;
-    }
-
-    public String getBoardTitle() {
-        return boardTitle;
-    }
-
-    public void setBoardTitle(String boardTitle) {
-        this.boardTitle = boardTitle;
-    }
-
-    public String getBoardContents() {
-        return boardContents;
-    }
-
-    public void setBoardContents(String boardContents) {
-        this.boardContents = boardContents;
-    }
-
-    public Date getBoardDate() {
-        return boardDate;
-    }
-
-    public void setBoardDate(Date boardDate) {
-        this.boardDate = boardDate;
-    }
-
-    public String getBoardPicture() {
-        return boardPicture;
-    }
-
-    public void setBoardPicture(String boardPicture) {
-        this.boardPicture = boardPicture;
-    }
-
-    public int getBoardLikeNum() {
-        return boardLikeNum;
-    }
-
-    public void setBoardLikeNum(int boardLikeNum) {
-        this.boardLikeNum = boardLikeNum;
-    }
-
-    public int getBoardCommentNum() {
-        return boardCommentNum;
-    }
-
-    public void setBoardCommentNum(int boardCommentNum) {
-        this.boardCommentNum = boardCommentNum;
-    }
-
-    public String getBoardUserProfilePicture() {
-        return boardUserProfilePicture;
-    }
-
-    public void setBoardUserProfilePicture(String boardUserProfilePicture) {
-        this.boardUserProfilePicture = boardUserProfilePicture;
-    }
-
-    public String getBoardUserNickname() {
-        return boardUserNickname;
-    }
-
-    public void setBoardUserNickname(String boardUserNickname) {
-        this.boardUserNickname = boardUserNickname;
-    }
-
-    public int getBoardUserId() {
-        return boardUserId;
-    }
-
-    public void setBoardUserId(int boardUserId) {
-        this.boardUserId = boardUserId;
-    }
-
-    public String getBoardHashtags() {
-        return boardHashtags;
-    }
-
-    public void setBoardHashtags(String boardHashtags) {
-        this.boardHashtags = boardHashtags;
-    }
-
-    public String getBoardLocation() {
-        return boardLocation;
-    }
-
-    public void setBoardLocation(String boardLocation) {
-        this.boardLocation = boardLocation;
-    }
 
 }

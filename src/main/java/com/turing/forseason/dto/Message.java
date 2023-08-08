@@ -11,7 +11,7 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class MessageDTO {
+public class Message {
     /*
     유저 -> 서버 DTO
      */
