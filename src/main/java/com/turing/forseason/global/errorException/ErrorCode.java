@@ -1,4 +1,4 @@
-package com.turing.forseason.global.errorExeption;
+package com.turing.forseason.global.errorException;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;

@@ -1,6 +1,6 @@
 package com.turing.forseason.global.dto;
 
-import com.turing.forseason.global.errorExeption.ErrorCode;
+import com.turing.forseason.global.errorException.ErrorCode;
 import lombok.*;
 
 @Getter

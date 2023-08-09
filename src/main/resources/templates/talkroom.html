@@ -40,7 +40,7 @@
     </ul>
     <form id="messageForm" name="messageForm">
 <!--      input의 style도 임의로 살짝 넣었습니다.-->
-      <input type="text" id="message" placeholder="실시간 TALK에 참여해보세요" autocomplete="off" style="width:1000px; height: 20px; font-size:15px;">
+      <input type="text" id="stompMessage" placeholder="실시간 TALK에 참여해보세요" autocomplete="off" style="width:1000px; height: 20px; font-size:15px;">
       <button type="submit">Send</button>
     </form>
   </div>
@@ -51,7 +51,7 @@
 
 <script th:inline="javascript">
   var messageArea = document.querySelector('#messageArea');
-  var messageInput = document.querySelector('#message');
+  var messageInput = document.querySelector('#stompMessage');
   var messageForm = document.querySelector('#messageForm');
 
   var roomLocation = [[${room.location}]];
@@ -117,7 +117,7 @@
   function onMessageReceived(payload){
     // 메세지를 받았을 때 처리하는 로직
 
-    // chat의 꼴 (==message)
+    // chat의 꼴 (==stompMessage)
     // var chat={
     //     type,
     //     userUUID,

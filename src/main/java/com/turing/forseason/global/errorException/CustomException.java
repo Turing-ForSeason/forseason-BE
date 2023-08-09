@@ -1,10 +1,10 @@
-package com.turing.forseason.global.errorExeption;
+package com.turing.forseason.global.errorException;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
 @AllArgsConstructor
 @Getter
-public class CustomExeption extends RuntimeException{
+public class CustomException extends RuntimeException{
     public ErrorCode errorCode;
 }

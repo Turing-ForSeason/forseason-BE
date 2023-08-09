@@ -1,11 +1,13 @@
 package com.turing.forseason.service;
 
-import com.turing.forseason.dto.Message;
+import com.turing.forseason.dto.StompMessage;
 import com.turing.forseason.dto.TalkRoom;
 import com.turing.forseason.entity.TalkEntity;
 import com.turing.forseason.entity.UserEntity;
-import com.turing.forseason.global.errorExeption.CustomExeption;
-import com.turing.forseason.global.errorExeption.ErrorCode;
+import com.turing.forseason.global.errorException.CustomException;
+import com.turing.forseason.global.errorException.ErrorCode;
+import com.turing.forseason.global.errorException.StompErrorCode;
+import com.turing.forseason.global.errorException.StompException;
 import com.turing.forseason.mapper.TalkRooms;
 import com.turing.forseason.repository.TalkRepository;
 import com.turing.forseason.repository.UserRepository;
@@ -34,13 +36,13 @@ public class TalkService {
         return talkList;
     }
 
-    public List<Message> talk2Messages(String location, String userUUID, List<TalkEntity> talkList) {
+    public List<StompMessage> talk2Messages(String location, String userUUID, List<TalkEntity> talkList) {
         //talk->message 로 바꾸기.
         int userId = getUserId(location, userUUID);
-        List<Message> messageList = new ArrayList<>();
+        List<StompMessage> stompMessageList = new ArrayList<>();
 
         for (TalkEntity item : talkList) {
-            Message message= Message.builder()
+            StompMessage stompMessage = StompMessage.builder()
                     .location(location)
                     .content(item.getTalkContents())
                     .userNickname(item.getTalkUserNickname())
@@ -48,13 +50,13 @@ public class TalkService {
                     .date(item.getTalkDate())
                     .build();
             if (item.getTalkUserId() == userId) {
-                message.setType(Message.MessageType.MINE);
+                stompMessage.setType(StompMessage.MessageType.MINE);
             }else{
-                message.setType(Message.MessageType.TALK);
+                stompMessage.setType(StompMessage.MessageType.TALK);
             }
-            messageList.add(message);
+            stompMessageList.add(stompMessage);
         }
-        return messageList;
+        return stompMessageList;
     }
 
 //    public MessageDTO initUser(MessageDTO messageDTO){
@@ -70,25 +72,41 @@ public class TalkService {
 //        return initMessage;
 //    }
 
-    public TalkEntity storeTalkEntity(Message message){
-        int userId = getUserId(message.getLocation(), message.getUserUUID());
+    public TalkEntity storeTalkEntity(StompMessage stompMessage){
+        int userId = getUserId(stompMessage.getLocation(), stompMessage.getUserUUID());
+
         //DB에 저장
         TalkEntity talkEntity = TalkEntity.builder()
                 .talkUserId(userId)
-                .talkContents(message.getContent())
-                .talkDate(message.getDate())
-                .talkUserNickname(message.getUserNickname())
-                .talkUserProfilePicture(message.getUserProfilePicture())
-                .talkLocation(message.getLocation())
+                .talkContents(stompMessage.getContent())
+                .talkDate(stompMessage.getDate())
+                .talkUserNickname(stompMessage.getUserNickname())
+                .talkUserProfilePicture(stompMessage.getUserProfilePicture())
+                .talkLocation(stompMessage.getLocation())
                 .build();
         return talkRepository.save(talkEntity);
+    }
+
+    public void verifyStompMessage(StompMessage stompMessage){
+        //stompMessage의 필수 구성요소인 location과 userUUID가 유효한지 검사
+        String location = stompMessage.getLocation();
+        String userUUID = stompMessage.getUserUUID();
+
+        if(location == null) throw new StompException(StompErrorCode.INVALID_LOCATION);
+        if(userUUID == null) throw new StompException(StompErrorCode.INVALID_USER_UUID);
+
+        TalkRoom talkRoom = findByLocation(location);
+        Integer userId = getUserId(location, userUUID);
+
+        if(talkRoom == null) throw new StompException(StompErrorCode.INVALID_LOCATION);
+        if(userId == null) throw new StompException(StompErrorCode.INVALID_USER_UUID);
     }
 
     public UserEntity getUser(String location, String userUUID) {
         int userId = getUserId(location, userUUID);
         Optional<UserEntity> user = userRepository.findById(userId);
 
-        if(user.isEmpty()) throw new CustomExeption(ErrorCode.TALK_USER_ENTITY_NOT_FOUND);
+        if(user.isEmpty()) throw new CustomException(ErrorCode.TALK_USER_ENTITY_NOT_FOUND);
 
         return user.get();
     }
@@ -103,7 +121,7 @@ public class TalkService {
     public TalkRoom findByLocation(String location){
         //채팅방 이름으로 찾기
         TalkRoom talkRoom = talkRoomMap.get(location);
-        if(talkRoom==null) throw new CustomExeption(ErrorCode.TALK_ROOM_NOT_FOUND);
+        if(talkRoom==null) throw new CustomException(ErrorCode.TALK_ROOM_NOT_FOUND);
 
         return talkRoom;
     }
@@ -127,7 +145,7 @@ public class TalkService {
         //채팅방에서 userId 조회
         TalkRoom talkRoom = findByLocation(location);
         Integer userID = talkRoom.getUserList().get(userUUID);
-        if(userID==null) throw new CustomExeption(ErrorCode.TALK_USER_NOT_FOUND);
+        if(userID==null) throw new CustomException(ErrorCode.TALK_USER_NOT_FOUND);
 
         return userID;
     }
