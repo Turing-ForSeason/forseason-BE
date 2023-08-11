@@ -19,10 +19,10 @@ import java.util.UUID;
 
 @RestController
 @RequiredArgsConstructor
-public class TalkRestAPIController {
+public class TalkAPIController {
     private final TalkService talkService;
 
-    @GetMapping("/talk/roomList")
+    @GetMapping("/talk/rooms")
     public ApplicationResponse<List<TalkRoom>> getTalkRoomList(HttpSession session){
         // JWT 토큰으로 유효성 검사 필수 (나중에 합칠때 구현 예정)
         // 지금은 HttpSession으로 구현함
@@ -59,7 +59,7 @@ public class TalkRestAPIController {
 
 
     //userNickname과 userProfilePicture를 DB에서 가져와서 초기화 해주기
-    @GetMapping("/talk/initUser")
+    @GetMapping("/talk/user/init")
     @ResponseBody
     public ApplicationResponse<Map<String, String>> initUser(@RequestParam("location") String location, @RequestParam("userUUID") String userUUID) {
         System.out.println("initUser");
@@ -77,7 +77,7 @@ public class TalkRestAPIController {
 
 
     //이전 기록들 불러오기
-    @GetMapping("/talk/getTalks")
+    @GetMapping("/talk/talks")
     @ResponseBody
     public ApplicationResponse<List<StompMessage>> getTalks(@RequestParam("page") int page, @RequestParam("location") String location,
                                                             @RequestParam("userUUID") String userUUID) {
@@ -91,7 +91,7 @@ public class TalkRestAPIController {
 
 
     //유저수를 갱신하는 역할.
-    @GetMapping("/talk/userCount")
+    @GetMapping("/talk/room/userCount")
     public ApplicationResponse<Map<String, Long>> getUserCount(@RequestParam("location") String location) {
 //        TalkRoom talkRoom = TalkRooms.getInstance().getTalkRoomMap().get(location);
         TalkRoom talkRoom = talkService.findByLocation(location);
@@ -106,7 +106,7 @@ public class TalkRestAPIController {
 
     //enterTalkRoom에서 구현상 불가피하게 STOMP소켓 연결전에 UserList에 유저를 추가했으므로,
     //만일 STOMP 연결 실패시 해당 사용자 삭제.
-    @PostMapping("/talk/deleteUser")
+    @PostMapping("/talk/user/delete")
     public void deleteUser(@RequestBody Map<String,String> userInfo) {
         //소켓 연결 오류시 userList 에서 user 삭제.
         String location = userInfo.get("location");

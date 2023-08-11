@@ -48,6 +48,7 @@ public class TalkService {
                     .userNickname(item.getTalkUserNickname())
                     .userProfilePicture(item.getTalkUserProfilePicture())
                     .date(item.getTalkDate())
+                    .userUUID(null) // 되는지 해봐야될듯.
                     .build();
             if (item.getTalkUserId() == userId) {
                 stompMessage.setType(StompMessage.MessageType.MINE);
