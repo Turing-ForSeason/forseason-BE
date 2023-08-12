@@ -20,7 +20,7 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
     public void registerStompEndpoints(StompEndpointRegistry registry) {
         // stomp 접속 주소 url => /stomp/talk
         registry.addEndpoint("/stomp/talk") // 연결될 엔드포인트
-                .setAllowedOrigins("http://localhost:8080")
+                .setAllowedOrigins("http://localhost:3000") //http://localhost:8080 => *
                 .withSockJS(); // SocketJS 를 연결한다는 설정
 
         registry.setErrorHandler(stompExceptionHandler);
@@ -39,4 +39,6 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
     public void configureClientInboundChannel(ChannelRegistration registration) {
         registration.interceptors(messagePreHandler);
     }
+
+
 }

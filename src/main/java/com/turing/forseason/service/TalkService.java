@@ -121,6 +121,7 @@ public class TalkService {
 
     public TalkRoom findByLocation(String location){
         //채팅방 이름으로 찾기
+        System.out.println("findByLocation, location: " + location);
         TalkRoom talkRoom = talkRoomMap.get(location);
         if(talkRoom==null) throw new CustomException(ErrorCode.TALK_ROOM_NOT_FOUND);
 

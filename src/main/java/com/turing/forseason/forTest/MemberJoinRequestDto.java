@@ -3,18 +3,13 @@ package com.turing.forseason.forTest;
 import com.turing.forseason.entity.UserEntity;
 import lombok.*;
 
-import javax.persistence.Column;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-
 @Getter
 @Setter
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
 @ToString
-public class UserDTO {
+public class MemberJoinRequestDto {
     /*
     테스트용 클래스임
      */
@@ -28,8 +23,8 @@ public class UserDTO {
     private int userBoardNum;
     private int userCommentNum;
 
-    public static UserDTO toUserDTO(UserEntity userEntity){
-        UserDTO userDTO = UserDTO.builder()
+    public static MemberJoinRequestDto toUserDTO(UserEntity userEntity){
+        MemberJoinRequestDto memberJoinRequestDto = MemberJoinRequestDto.builder()
                 .userId(userEntity.getUserId())
                 .userName(userEntity.getUserName())
                 .userEmail(userEntity.getUserEmail())
@@ -38,17 +33,17 @@ public class UserDTO {
                 .userPhoneNumber(userEntity.getUserPhoneNumber())
                 .userProfilePicture(userEntity.getUserProfilePicture())
                 .build();
-        return userDTO;
+        return memberJoinRequestDto;
     }
 
-    public static UserEntity toUserEntity(UserDTO userDTO){
+    public static UserEntity toUserEntity(MemberJoinRequestDto memberJoinRequestDto){
         UserEntity userEntity = UserEntity.builder()
-                .userName(userDTO.getUserName())
-                .userEmail(userDTO.getUserEmail())
-                .userPassword(userDTO.getUserPassword())
-                .userNickname(userDTO.getUserNickname())
-                .userPhoneNumber(userDTO.getUserPhoneNumber())
-                .userProfilePicture(userDTO.getUserProfilePicture())
+                .userName(memberJoinRequestDto.getUserName())
+                .userEmail(memberJoinRequestDto.getUserEmail())
+                .userPassword(memberJoinRequestDto.getUserPassword())
+                .userNickname(memberJoinRequestDto.getUserNickname())
+                .userPhoneNumber(memberJoinRequestDto.getUserPhoneNumber())
+                .userProfilePicture(memberJoinRequestDto.getUserProfilePicture())
                 .build();
         return userEntity;
     }

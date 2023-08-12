@@ -1,48 +1,38 @@
 package com.turing.forseason.forTest;
 
+import com.turing.forseason.entity.UserEntity;
 import com.turing.forseason.service.UserService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpSession;
 
-@Controller
+@RestController
 @RequiredArgsConstructor
+@CrossOrigin(origins = "*")
 public class TestController {
     private final UserService userService;
 
-    @GetMapping("/")
-    public String home() {
-        return "login";
-    }
+    @PostMapping("/login")
+    public MemberLoginResponseDto login(@RequestBody final MemberLoginRequestDto memberLoginRequestDto){
+        UserEntity userEntity = userService.login(memberLoginRequestDto);
 
-    @PostMapping("/user/login")
-    public String login(@ModelAttribute UserDTO userDTO, HttpSession session) {
-        UserDTO loginResult = userService.login(userDTO);
-
-        if(loginResult!=null){
-            // login 성공
-            session.setAttribute("userId", loginResult.getUserId());
-            return "home";
-        }else{
-            // login 실패
-            return "login";
+        if(userEntity==null){
+            return MemberLoginResponseDto.builder()
+                    .auth(MemberLoginResponseDto.Auth.REJECT)
+                    .userId(null)
+                    .build();
+        } else{
+            System.out.println(userEntity.getUserId());
+            return MemberLoginResponseDto.builder()
+                    .auth(MemberLoginResponseDto.Auth.CONFIRM)
+                    .userId(userEntity.getUserId())
+                    .build();
         }
     }
 
-    @GetMapping("/user/join")
-    public String getJoinForm(){
-        return "join";
-    }
-
-    @PostMapping("user/join")
-    public  String join(@ModelAttribute UserDTO userDTO){
-        System.out.println("UserController.join");
-        System.out.println("userDTO = " + userDTO);
-        userService.join(userDTO);
-        return "login";
+    @PostMapping("/join")
+    public void join(@RequestBody final MemberJoinRequestDto memberJoinRequestDto) {
+        userService.join(memberJoinRequestDto);
     }
 }

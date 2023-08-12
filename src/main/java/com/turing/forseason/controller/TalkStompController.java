@@ -18,6 +18,7 @@ import java.time.LocalDateTime;
 
 @RequiredArgsConstructor
 @RestController
+@CrossOrigin(origins = "*")
 public class TalkStompController {
     private final SimpMessageSendingOperations tmp;
     private final TalkService talkService;
@@ -28,12 +29,23 @@ public class TalkStompController {
         String location = stompMessage.getLocation();
         String userUUID = stompMessage.getUserUUID();
 
+        System.out.println("STOMP enter, location: "+location+", userUUID: "+userUUID);
         //소켓 세션에 유저 정보 저장
         headerAccessor.getSessionAttributes().put("userUUID", userUUID);
         headerAccessor.getSessionAttributes().put("location", location);
 
         //type=ENTER 인 메세지 발송 (이거로 userCount 갱신 예정.)
         tmp.convertAndSend("/sub/talk/room/" + stompMessage.getLocation(), StompResponse.ok(StompErrorCode.SUCCESS, stompMessage));
+    }
+
+    @MessageMapping("/talk/leave")
+    public void leaveUser(@Payload StompMessage stompMessage, SimpMessageHeaderAccessor headerAccessor) {
+        System.out.println("leaveUser");
+        String location = stompMessage.getLocation();
+        String userUUID = stompMessage.getUserUUID();
+
+        talkService.delUser(location,userUUID);
+        tmp.convertAndSend("/sub/talk/room/" + location, StompResponse.ok(StompErrorCode.SUCCESS, stompMessage));
     }
 
     @MessageMapping("/talk/sendMessage")
@@ -53,6 +65,7 @@ public class TalkStompController {
         // stomp 세션에 있던 uuid 와 roomId 를 확인해서 채팅방 유저 리스트와 room 에서 해당 유저를 삭제
         String userUUID = (String) headerAccessor.getSessionAttributes().get("userUUID");
         String location = (String) headerAccessor.getSessionAttributes().get("location");
+        System.out.println("disconnect, location: "+location+", userUUID: "+userUUID);
 
         //채팅방 유저리스트에서 삭제(by UUID)
         talkService.delUser(location,userUUID);
