@@ -22,16 +22,37 @@ repositories {
 }
 
 dependencies {
+	//security
+	implementation 'org.springframework.boot:spring-boot-starter-security'
+	implementation 'org.springframework.boot:spring-boot-starter-validation'
+	testImplementation 'org.springframework.security:spring-security-test'
+	implementation 'com.sun.jini:sun-util:2.1'
+	implementation 'com.google.code.gson:gson:2.8.7'
+	implementation 'com.auth0:java-jwt:4.0.0'
+	implementation 'org.json:json:20200518'
+
+	implementation 'com.fasterxml.jackson.core:jackson-databind'
+	implementation 'org.jsoup:jsoup:1.14.2'
+	implementation group: 'io.jsonwebtoken', name: 'jjwt-api', version: '0.11.5'
+	runtimeOnly group: 'io.jsonwebtoken', name: 'jjwt-impl', version: '0.11.5'
+	runtimeOnly group: 'io.jsonwebtoken', name: 'jjwt-jackson', version: '0.11.5'
+
+
+	//websocket
 	implementation 'org.springframework.boot:spring-boot-starter-websocket'
+
+	//jpa
 	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+
 	implementation 'org.springframework.boot:spring-boot-starter-thymeleaf'
+
 	//stomp
 	implementation 'org.webjars:stomp-websocket:2.3.4'
+
 	implementation 'org.springframework.boot:spring-boot-starter-web'
+
 	//sockjs
 	implementation 'org.webjars:sockjs-client:1.5.1'
-
-	implementation 'nz.net.ultraq.thymeleaf:thymeleaf-layout-dialect'
 
 	compileOnly 'org.projectlombok:lombok'
 	runtimeOnly 'com.mysql:mysql-connector-j'

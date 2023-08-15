@@ -1,6 +1,6 @@
 package com.turing.forseason.global.dto;
 
-import com.turing.forseason.dto.StompMessage;
+import com.turing.forseason.domain.talk.dto.StompMessage;
 import com.turing.forseason.global.errorException.StompErrorCode;
 import lombok.*;
 

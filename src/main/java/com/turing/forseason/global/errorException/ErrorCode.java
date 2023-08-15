@@ -19,6 +19,9 @@ public enum ErrorCode {
 
     // 잘못된 location
     TALK_ROOM_NOT_FOUND(HttpStatus.NOT_FOUND, "해당하는 정보의 채팅방을 찾을 수 없습니다.", 5003),
+
+    // 이미 접속중인 사용자
+    TALK_DUPLICATED_USER(HttpStatus.NOT_ACCEPTABLE, "중복된 사용자입니다.", 5004)
     ;
 
 

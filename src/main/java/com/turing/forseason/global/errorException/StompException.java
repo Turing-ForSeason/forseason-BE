@@ -1,6 +1,5 @@
 package com.turing.forseason.global.errorException;
 
-import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.messaging.MessageDeliveryException;
