@@ -23,6 +23,7 @@ public class TalkStompController {
     private final SimpMessageSendingOperations tmp;
     private final TalkService talkService;
 
+    // 채팅방 입장시
     @MessageMapping("/talk/enter")
     public void enterUser(@Payload StompMessage stompMessage, SimpMessageHeaderAccessor headerAccessor){
 
@@ -34,30 +35,42 @@ public class TalkStompController {
         headerAccessor.getSessionAttributes().put("userUUID", userUUID);
         headerAccessor.getSessionAttributes().put("location", location);
 
-        //type=ENTER 인 메세지 발송 (이거로 userCount 갱신 예정.)
+        //type=ENTER 인 메세지 발송 (이거로 클라이언트가 userCount 갱신.)
         tmp.convertAndSend("/sub/talk/room/" + stompMessage.getLocation(), StompResponse.ok(StompErrorCode.SUCCESS, stompMessage));
     }
 
+    // 채팅방 퇴장시
     @MessageMapping("/talk/leave")
     public void leaveUser(@Payload StompMessage stompMessage, SimpMessageHeaderAccessor headerAccessor) {
         System.out.println("leaveUser");
         String location = stompMessage.getLocation();
         String userUUID = stompMessage.getUserUUID();
 
+        // userList에서 사용자 삭제
         talkService.delUser(location,userUUID);
+
+        //type=LEAVE 인 메세지 발송 (이거로 클라이언트가 userCount 갱신.)
         tmp.convertAndSend("/sub/talk/room/" + location, StompResponse.ok(StompErrorCode.SUCCESS, stompMessage));
     }
 
+    // 메세지 전송
     @MessageMapping("/talk/sendMessage")
     public void sendMessage(@Payload StompMessage stompMessage){
         System.out.println("sendMessage");
         System.out.println("stompMessage = " + stompMessage);
 
+        // 서버에서 date를 추가
         stompMessage.setDate(LocalDateTime.now());
+
+        // 메세지를 db에 저장
         talkService.storeTalkEntity(stompMessage);
+
+        // 채팅방에 메세지 전송
         tmp.convertAndSend("/sub/talk/room/"+ stompMessage.getLocation(), StompResponse.ok(StompErrorCode.SUCCESS, stompMessage));
     }
 
+    // 연결 해제시 채팅방 리스트에서 사용자를 삭제하는 로직을 3중으로 구현함.(@MessageMapping("/talk/leave"), @PostMapping("/talk/user/delete"), 이 메서드)
+    // 이 메서드는 DISCONNECT 포멧의 STOMP 메세지를 수신했을 때 실행
     @EventListener
     public void webSocketDisconnectListener(SessionDisconnectEvent event){
         StompHeaderAccessor headerAccessor = StompHeaderAccessor.wrap(event.getMessage());

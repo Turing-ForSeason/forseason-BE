@@ -19,7 +19,7 @@ public class StompExceptionHandler extends StompSubProtocolErrorHandler {
 
     @Override
     public Message<byte[]> handleClientMessageProcessingError(Message<byte[]> clientMessage, Throwable ex) {
-        //여기서 JWT 토큰 예외처리도 추가해야 함
+
         if(ex instanceof StompException){
             // exception을 토대로 errorResponse를 만듬
             StompException stompException = (StompException) ex;

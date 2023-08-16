@@ -23,19 +23,18 @@ import java.nio.charset.StandardCharsets;
 @Component
 @RequiredArgsConstructor
 public class MessagePreHandler implements ChannelInterceptor {
+    // 서버가 메세지를 전달 받으면 로직 실행전에 실행되는 클래스.
     private final TalkService talkService;
     private final ObjectMapper objectMapper = new ObjectMapper();
 
     @Override
     public Message<?> preSend(Message<?> message, MessageChannel channel) {
-        // 코드가 많이 더러운데 추후 고칠 예정
 
         // 헤더 뽑기
         StompHeaderAccessor headerAccessor = StompHeaderAccessor.wrap(message);
-
+        // 메세지 프레임이 DISCONNECT라면, JWT토큰 검사 필요없음. (어차피 연결헤제하려는 메세지이기 때문)
         if(StompCommand.DISCONNECT.equals(headerAccessor.getCommand()))return message;
 
-        System.out.println(message);
 
         // Jwt 헤더 뽑아내기
         String jwtHeader = headerAccessor.getFirstNativeHeader(JwtProperties.HEADER_STRING);
@@ -80,8 +79,6 @@ public class MessagePreHandler implements ChannelInterceptor {
                 throw e;
             }
         }
-
-        // JWT 토큰 유효성 검사 추가 예정
 
         return message;
     }

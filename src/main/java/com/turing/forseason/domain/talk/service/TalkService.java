@@ -37,7 +37,7 @@ public class TalkService {
     }
 
     public List<StompMessage> talk2Messages(String location, String userUUID, List<TalkEntity> talkList) {
-        //talk->message 로 바꾸기.
+        //talkEntity->StompMessage 로 바꾸기.
         Long userId = getUserId(location, userUUID);
         List<StompMessage> stompMessageList = new ArrayList<>();
 
@@ -48,8 +48,10 @@ public class TalkService {
                     .userNickname(item.getTalkUserNickname())
                     .userProfilePicture(item.getTalkUserProfilePicture())
                     .date(item.getTalkDate())
-                    .userUUID(null) // 되는지 해봐야될듯.
+                    .userUUID(null)
                     .build();
+
+            // 클라이언트에서 MINE은 무조건 내 채팅으로, TALK은 상대방 채팅으로 뜨게 하기 위함 (getTalks 한정)
             if (item.getTalkUserId() == userId) {
                 stompMessage.setType(StompMessage.MessageType.MINE);
             }else{
@@ -60,18 +62,6 @@ public class TalkService {
         return stompMessageList;
     }
 
-//    public MessageDTO initUser(MessageDTO messageDTO){
-//        //사용자를 초기화하는 메세지 만들기.
-//        int userId = getUserId(messageDTO.getLocation(), messageDTO.getUserUUID());
-//        UserEntity user = userRepository.findById(userId).get();
-//
-//        MessageDTO initMessage = MessageDTO.builder()
-//                .type(MessageDTO.MessageType.INIT)
-//                .userNickname(user.getUserNickname())
-//                .userProfilePicture(user.getUserProfilePicture())
-//                .build();
-//        return initMessage;
-//    }
 
     public TalkEntity storeTalkEntity(StompMessage stompMessage){
         Long userId = getUserId(stompMessage.getLocation(), stompMessage.getUserUUID());
@@ -114,7 +104,7 @@ public class TalkService {
 
     public List<TalkRoom> findAllRoom(){
         List chatRooms = new ArrayList(talkRoomMap.values());
-        Collections.reverse(chatRooms); // 채팅방 생성 순서를 최근순으로.(아마 나중에 로직 바꿀듯)
+        Collections.reverse(chatRooms);
 
         return chatRooms;
     }
@@ -129,6 +119,7 @@ public class TalkService {
     }
 
     public String addUser(String location, String userUUID, Long userId) {
+        // talkRoom의 userList에 사용자 추가
         TalkRoom talkRoom = findByLocation(location);
 
         if(talkRoom.getUserList().containsValue(userId)){
@@ -157,15 +148,4 @@ public class TalkService {
         return userID;
     }
 
-//    public ArrayList<Integer> getUserList(String location){
-//        //채팅방 전체 userList 조회
-//        ArrayList<String> list = new ArrayList<>();
-//
-//        ChatRoom chatRoom = talkRoomMap.get(location);
-//
-//        // hashmap 을 for 문을 돌린 후
-//        // value 값만 뽑아내서 list 에 저장 후 reutrn
-//        chatRoom.getUserList().forEach((key, value) -> list.add(value));
-//        return list;
-//    }
 }

@@ -25,7 +25,7 @@ import java.util.UUID;
 public class TalkAPIController {
     private final TalkService talkService;
 
-
+    // 채팅방 리스트 반환
     @GetMapping("/talk/rooms")
     public ApplicationResponse<List<TalkRoom>> getTalkRoomList(@AuthenticationPrincipal PrincipalDetails principalDetails) {
         if (principalDetails.getUser() == null) {
