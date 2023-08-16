@@ -30,7 +30,7 @@ public class TalkService {
 
     public List<TalkEntity> getTalks(String location, int page, int size) {
         Pageable pageable = PageRequest.of(page, size);
-        List<TalkEntity> talkList = talkRepository.findByTalkLocationOrderByTalkDateDesc(location, pageable);
+        List<TalkEntity> talkList = talkRepository.findByTalkLocationOrderByCreatedAtDesc(location, pageable);
         Collections.reverse(talkList);
         return talkList;
     }
@@ -46,7 +46,7 @@ public class TalkService {
                     .content(item.getTalkContents())
                     .userNickname(item.getTalkUserNickname())
                     .userProfilePicture(item.getTalkUserProfilePicture())
-                    .date(item.getTalkDate())
+                    .date(item.getCreatedAt())
                     .userUUID(null)
                     .build();
 
@@ -69,7 +69,6 @@ public class TalkService {
         TalkEntity talkEntity = TalkEntity.builder()
                 .talkUserId(userId)
                 .talkContents(stompMessage.getContent())
-                .talkDate(stompMessage.getDate())
                 .talkUserNickname(stompMessage.getUserNickname())
                 .talkUserProfilePicture(stompMessage.getUserProfilePicture())
                 .talkLocation(stompMessage.getLocation())

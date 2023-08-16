@@ -1,4 +1,4 @@
-package com.turing.forseason.domain.user.domain.OauthEnums;
+package com.turing.forseason.domain.user.entity;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;

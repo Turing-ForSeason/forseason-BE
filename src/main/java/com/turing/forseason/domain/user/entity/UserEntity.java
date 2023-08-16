@@ -1,7 +1,9 @@
 package com.turing.forseason.domain.user.entity;
 
-import com.turing.forseason.domain.user.domain.OauthEnums.Role;
+import com.turing.forseason.global.entity.BaseTimeEntity;
 import lombok.*;
+import org.hibernate.annotations.SQLDelete;
+import org.hibernate.annotations.Where;
 
 import javax.persistence.*;
 import java.util.ArrayList;
@@ -9,13 +11,12 @@ import java.util.Arrays;
 import java.util.List;
 
 @Getter
-@Setter
-@NoArgsConstructor
-@AllArgsConstructor
-@Builder
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Entity
 @Table(name = "User")
-public class UserEntity {
+@SQLDelete(sql = "UPDATE User SET deleted_at = NOW() where user_id = ?")
+@Where(clause = "deleted_at IS NULL")
+public class UserEntity extends BaseTimeEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -60,5 +61,18 @@ public class UserEntity {
         }
         return new ArrayList<>();
     }
-
+    @Builder
+    public UserEntity(Long userId, String userName, String userEmail, String userNickname, Long userBoardNum, Long userCommentNum, Long kakao_id, String image, String thumbnail, String nickname, Role myRole) {
+        this.userId = userId;
+        this.userName = userName;
+        this.userEmail = userEmail;
+        this.userNickname = userNickname;
+        this.userBoardNum = userBoardNum;
+        this.userCommentNum = userCommentNum;
+        this.kakao_id = kakao_id;
+        this.image = image;
+        this.thumbnail = thumbnail;
+        this.nickname = nickname;
+        this.myRole = myRole;
+    }
 }
