@@ -6,6 +6,8 @@ import com.auth0.jwt.exceptions.JWTVerificationException;
 import com.auth0.jwt.exceptions.TokenExpiredException;
 import com.turing.forseason.domain.user.entity.UserEntity;
 import com.turing.forseason.domain.user.repository.UserRepository;
+import com.turing.forseason.global.errorException.CustomException;
+import com.turing.forseason.global.errorException.ErrorCode;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -63,7 +65,7 @@ public class JwtRequestFilter extends OncePerRequestFilter {
 
             // 위 userId로 사용자 찾기
             UserEntity user = userRepository.findByUserId(userId).orElseThrow(
-                    () -> new NoSuchElementException("해당 사용자가 존재하지 않습니다.")
+                    () -> new CustomException(ErrorCode.AUTH_USER_NOT_FOUND)
             );
 
             PrincipalDetails principalDetails = new PrincipalDetails(user);
@@ -79,9 +81,11 @@ public class JwtRequestFilter extends OncePerRequestFilter {
         } catch (TokenExpiredException e) {
             e.printStackTrace();
             request.setAttribute(JwtProperties.HEADER_STRING, "토큰이 만료되었습니다.");
+            throw new CustomException(ErrorCode.INVALID_JWT_EXPIRED);
         } catch (JWTVerificationException e) {
             e.printStackTrace();
             request.setAttribute(JwtProperties.HEADER_STRING, "유효하지 않은 토큰입니다.");
+            throw new CustomException(ErrorCode.INVALID_JWT_TOKEN);
         }
 
         request.setAttribute("userCode", userId);

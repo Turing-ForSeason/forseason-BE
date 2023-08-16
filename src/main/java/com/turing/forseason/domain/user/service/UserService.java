@@ -11,6 +11,8 @@ import com.turing.forseason.domain.user.domain.OauthEnums.Role;
 import com.turing.forseason.domain.user.dto.UserDetailDto;
 import com.turing.forseason.domain.user.entity.UserEntity;
 import com.turing.forseason.domain.user.repository.UserRepository;
+import com.turing.forseason.global.errorException.CustomException;
+import com.turing.forseason.global.errorException.ErrorCode;
 import com.turing.forseason.global.jwt.JwtProperties;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,6 +21,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
 
@@ -32,15 +35,10 @@ import java.util.Optional;
 
 @RequiredArgsConstructor
 @Service
+@Transactional
 public class UserService {
 
-
-    @Autowired
     private final UserRepository userRepository;
-
-
-
-
 
     public String getKakaoAccessToken (String code) {
         String access_Token = "";
@@ -55,7 +53,7 @@ public class UserService {
             conn.setRequestMethod("POST");
             conn.setDoOutput(true);
 
-//            conn.setRequestProperty("Content-type", "application/x-www-form-urlencoded;charset=utf-8");
+            conn.setRequestProperty("Content-type", "application/x-www-form-urlencoded;charset=utf-8");
 
             //POST 요청에 필요로 요구하는 파라미터 스트림을 통해 전송
             BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(conn.getOutputStream()));
@@ -95,6 +93,7 @@ public class UserService {
             bw.close();
         } catch (IOException e) {
             e.printStackTrace();
+            throw new CustomException(ErrorCode.AUTH_INVALID_KAKAO_CODE);
         }
 
         return access_Token;
@@ -199,7 +198,7 @@ public class UserService {
         System.out.println(userId+"3");
 
         UserEntity user = userRepository.findByUserId(userId).orElseThrow(
-                () -> new NoSuchElementException("해당 사용자가 존재하지 않습니다.")
+                () -> new CustomException(ErrorCode.AUTH_USER_NOT_FOUND)
         );
 
         return user;

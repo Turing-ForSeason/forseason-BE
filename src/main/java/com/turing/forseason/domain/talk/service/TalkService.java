@@ -29,7 +29,6 @@ public class TalkService {
 
 
     public List<TalkEntity> getTalks(String location, int page) {
-        //최신 100개의 TAlk 불러오기. 아마 뒤집어야할지 모름.
         Pageable pageable = PageRequest.of(page, 100);
         List<TalkEntity> talkList = talkRepository.findByTalkLocationOrderByTalkDateDesc(location, pageable);
         Collections.reverse(talkList);
@@ -111,7 +110,6 @@ public class TalkService {
 
     public TalkRoom findByLocation(String location){
         //채팅방 이름으로 찾기
-        System.out.println("findByLocation, location: " + location);
         TalkRoom talkRoom = talkRoomMap.get(location);
         if(talkRoom==null) throw new CustomException(ErrorCode.TALK_ROOM_NOT_FOUND);
 

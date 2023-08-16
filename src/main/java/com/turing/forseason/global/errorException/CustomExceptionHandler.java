@@ -11,7 +11,6 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 public class CustomExceptionHandler {
     @ExceptionHandler(CustomException.class)
     protected ResponseEntity<ApplicationErrorResponse> handleCustomException(CustomException e){
-        System.out.println(e.getErrorCode());
 
         return ResponseEntity.status(e.getErrorCode().getHttpStatus())
                 .body(new ApplicationErrorResponse(e.getErrorCode()));

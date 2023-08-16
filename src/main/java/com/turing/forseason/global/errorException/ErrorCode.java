@@ -7,9 +7,18 @@ import org.springframework.http.HttpStatus;
 @AllArgsConstructor
 @Getter
 public enum ErrorCode {
-    INVALID_JWT_TOKEN(HttpStatus.UNAUTHORIZED, "권한 정보가 없는 토큰입니다.", 1001),
+    SUCCESS_OK(HttpStatus.OK, "성공", 1000),
 
-    TALK_SUCCESS(HttpStatus.OK, "성공", 5000),
+    // 정석대로는 헤더필드의 Location에 URI를 넣어서 반환해야되는데 구현 할까요...?
+    SUCCESS_CREATED(HttpStatus.CREATED, "생성 성공", 1001),
+
+    INVALID_JWT_TOKEN(HttpStatus.UNAUTHORIZED, "유효하지 않는 토큰입니다.", 2001),
+
+    INVALID_JWT_EXPIRED(HttpStatus.UNAUTHORIZED, "만료된 토큰입니다.", 2002),
+
+    AUTH_USER_NOT_FOUND(HttpStatus.NOT_FOUND, "해당하는 정보의 사용자를 찾을 수 없습니다.", 2003),
+
+    AUTH_INVALID_KAKAO_CODE(HttpStatus.BAD_REQUEST, "잘못된 요청입니다.", 2004),
 
     // 채팅방 userList에 {userUUID, userID}로 매핑된 정보가 없음
     TALK_USER_NOT_FOUND(HttpStatus.NOT_FOUND, "해당하는 정보의 사용자를 찾을 수 없습니다.", 5001),
@@ -21,7 +30,7 @@ public enum ErrorCode {
     TALK_ROOM_NOT_FOUND(HttpStatus.NOT_FOUND, "해당하는 정보의 채팅방을 찾을 수 없습니다.", 5003),
 
     // 이미 접속중인 사용자
-    TALK_DUPLICATED_USER(HttpStatus.NOT_ACCEPTABLE, "중복된 사용자입니다.", 5004)
+    TALK_DUPLICATED_USER(HttpStatus.NOT_ACCEPTABLE, "중복된 사용자입니다.", 5004),
     ;
 
 

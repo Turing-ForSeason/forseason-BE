@@ -30,7 +30,6 @@ public class TalkStompController {
         String location = stompMessage.getLocation();
         String userUUID = stompMessage.getUserUUID();
 
-        System.out.println("STOMP enter, location: "+location+", userUUID: "+userUUID);
         //소켓 세션에 유저 정보 저장
         headerAccessor.getSessionAttributes().put("userUUID", userUUID);
         headerAccessor.getSessionAttributes().put("location", location);
@@ -42,7 +41,6 @@ public class TalkStompController {
     // 채팅방 퇴장시
     @MessageMapping("/talk/leave")
     public void leaveUser(@Payload StompMessage stompMessage, SimpMessageHeaderAccessor headerAccessor) {
-        System.out.println("leaveUser");
         String location = stompMessage.getLocation();
         String userUUID = stompMessage.getUserUUID();
 
@@ -56,8 +54,6 @@ public class TalkStompController {
     // 메세지 전송
     @MessageMapping("/talk/sendMessage")
     public void sendMessage(@Payload StompMessage stompMessage){
-        System.out.println("sendMessage");
-        System.out.println("stompMessage = " + stompMessage);
 
         // 서버에서 date를 추가
         stompMessage.setDate(LocalDateTime.now());
@@ -69,7 +65,7 @@ public class TalkStompController {
         tmp.convertAndSend("/sub/talk/room/"+ stompMessage.getLocation(), StompResponse.ok(StompErrorCode.SUCCESS, stompMessage));
     }
 
-    // 연결 해제시 채팅방 리스트에서 사용자를 삭제하는 로직을 3중으로 구현함.(@MessageMapping("/talk/leave"), @PostMapping("/talk/user/delete"), 이 메서드)
+    // 연결 해제시 채팅방 리스트에서 사용자를 삭제하는 로직을 3중으로 구현함.(@MessageMapping("/talk/leave"), @PostMapping("/talk/user/delete"), 그리고 이 메서드)
     // 이 메서드는 DISCONNECT 포멧의 STOMP 메세지를 수신했을 때 실행
     @EventListener
     public void webSocketDisconnectListener(SessionDisconnectEvent event){
@@ -78,7 +74,6 @@ public class TalkStompController {
         // stomp 세션에 있던 uuid 와 roomId 를 확인해서 채팅방 유저 리스트와 room 에서 해당 유저를 삭제
         String userUUID = (String) headerAccessor.getSessionAttributes().get("userUUID");
         String location = (String) headerAccessor.getSessionAttributes().get("location");
-        System.out.println("disconnect, location: "+location+", userUUID: "+userUUID);
 
         //채팅방 유저리스트에서 삭제(by UUID)
         talkService.delUser(location,userUUID);

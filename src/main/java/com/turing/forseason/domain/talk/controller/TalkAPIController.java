@@ -28,11 +28,8 @@ public class TalkAPIController {
     // 채팅방 리스트 반환
     @GetMapping("/talk/rooms")
     public ApplicationResponse<List<TalkRoom>> getTalkRoomList(@AuthenticationPrincipal PrincipalDetails principalDetails) {
-        if (principalDetails.getUser() == null) {
-            throw new CustomException(ErrorCode.INVALID_JWT_TOKEN);
-        }
 
-        return ApplicationResponse.ok(ErrorCode.TALK_SUCCESS, talkService.findAllRoom());
+        return ApplicationResponse.ok(ErrorCode.SUCCESS_OK, talkService.findAllRoom());
     }
 
 
@@ -43,18 +40,13 @@ public class TalkAPIController {
     @GetMapping("/talk/room")
     public ApplicationResponse<String> enterTalkRoom(@RequestParam("location") String location, @AuthenticationPrincipal PrincipalDetails principalDetails){
         // 여기서 채팅방에 유저 추가 + return UUID & TalkRoom
-        if (principalDetails.getUser() == null) {
-            throw new CustomException(ErrorCode.INVALID_JWT_TOKEN);
-        }
-
         String userUUID = UUID.randomUUID().toString();
         Long userId = principalDetails.getUser().getUserId();
-        System.out.println("userId = " + userId);
 
         // 채팅방에 유저 추가
         talkService.addUser(location, userUUID, userId);
 
-        return ApplicationResponse.ok(ErrorCode.TALK_SUCCESS, userUUID);
+        return ApplicationResponse.ok(ErrorCode.SUCCESS_OK, userUUID);
     }
 
 
@@ -62,7 +54,6 @@ public class TalkAPIController {
     @GetMapping("/talk/user/init")
     @ResponseBody
     public ApplicationResponse<Map<String, String>> initUser(@RequestParam("location") String location, @RequestParam("userUUID") String userUUID) {
-        System.out.println("initUser, location: "+location+", userUUID: "+userUUID);
 
         UserEntity user = talkService.getUser(location, userUUID);
         Map<String, String> response = new HashMap<>();
@@ -70,7 +61,7 @@ public class TalkAPIController {
         response.put("userNickname", user.getUserNickname());
         response.put("userProfilePicture", user.getThumbnail());
 
-        return ApplicationResponse.ok(ErrorCode.TALK_SUCCESS, response);
+        return ApplicationResponse.ok(ErrorCode.SUCCESS_OK, response);
     }
 
 
@@ -79,36 +70,34 @@ public class TalkAPIController {
     @ResponseBody
     public ApplicationResponse<List<StompMessage>> getTalks(@RequestParam("page") int page, @RequestParam("location") String location,
                                                             @RequestParam("userUUID") String userUUID) {
-        System.out.println("getTalks, page: " + page + ", location: " + location + ", userUUID: " + userUUID);
+
         List<TalkEntity> talkList = talkService.getTalks(location, page);
         List<StompMessage> stompMessageList = talkService.talk2Messages(location, userUUID, talkList);
 
 
-        return ApplicationResponse.ok(ErrorCode.TALK_SUCCESS, stompMessageList);
+        return ApplicationResponse.ok(ErrorCode.SUCCESS_OK, stompMessageList);
     }
 
 
     //유저수를 갱신하는 역할.
     @GetMapping("/talk/room/userCount")
     public ApplicationResponse<Map<String, Long>> getUserCount(@RequestParam("location") String location) {
-//        TalkRoom talkRoom = TalkRooms.getInstance().getTalkRoomMap().get(location);
-        System.out.println("getUserCount, location: "+location);
+
         TalkRoom talkRoom = talkService.findByLocation(location);
 
         Map<String, Long> response = new HashMap<>();
         response.put("userCount", talkRoom.getUserCount());
 
-//        return ResponseEntity.ok(response);
-        return ApplicationResponse.ok(ErrorCode.TALK_SUCCESS, response);
+        return ApplicationResponse.ok(ErrorCode.SUCCESS_OK, response);
     }
 
 
     //enterTalkRoom에서 구현상 불가피하게 STOMP소켓 연결전에 UserList에 유저를 추가했으므로,
     //만일 STOMP 연결 실패시 해당 사용자 삭제.
+    // + 사용자 삭제는 인증 없이도 할 수 있도록 SecurityConfig에 설정.
     @PostMapping("/talk/user/delete")
     public void deleteUser(@RequestBody Map<String,String> userInfo) {
-        System.out.println("delete user, "+userInfo);
-        //소켓 연결 오류시 userList 에서 user 삭제.
+
         String location = userInfo.get("location");
         String userUUID = userInfo.get("userUUID");
 
