@@ -28,8 +28,8 @@ public class TalkService {
     private final UserRepository userRepository;
 
 
-    public List<TalkEntity> getTalks(String location, int page) {
-        Pageable pageable = PageRequest.of(page, 100);
+    public List<TalkEntity> getTalks(String location, int page, int size) {
+        Pageable pageable = PageRequest.of(page, size);
         List<TalkEntity> talkList = talkRepository.findByTalkLocationOrderByTalkDateDesc(location, pageable);
         Collections.reverse(talkList);
         return talkList;

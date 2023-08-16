@@ -68,10 +68,10 @@ public class TalkAPIController {
     //이전 기록들 불러오기
     @GetMapping("/talk/talks")
     @ResponseBody
-    public ApplicationResponse<List<StompMessage>> getTalks(@RequestParam("page") int page, @RequestParam("location") String location,
+    public ApplicationResponse<List<StompMessage>> getTalks(@RequestParam("page") int page, @RequestParam("size") int size, @RequestParam("location") String location,
                                                             @RequestParam("userUUID") String userUUID) {
 
-        List<TalkEntity> talkList = talkService.getTalks(location, page);
+        List<TalkEntity> talkList = talkService.getTalks(location, page, 100);
         List<StompMessage> stompMessageList = talkService.talk2Messages(location, userUUID, talkList);
 
 
