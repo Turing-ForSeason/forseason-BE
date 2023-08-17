@@ -3,6 +3,8 @@ package com.turing.forseason.global.dto;
 import com.turing.forseason.global.errorException.ErrorCode;
 import lombok.*;
 
+import java.time.LocalDateTime;
+
 @Getter
 @Setter
 @Builder
@@ -25,4 +27,5 @@ public class ApplicationResponse<T> {
 
         return applicationResponse;
     }
+
 }

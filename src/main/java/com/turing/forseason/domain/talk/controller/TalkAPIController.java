@@ -1,6 +1,7 @@
 package com.turing.forseason.domain.talk.controller;
 
 import com.turing.forseason.domain.talk.dto.StompMessage;
+import com.turing.forseason.domain.talk.dto.TalkDto;
 import com.turing.forseason.domain.talk.dto.TalkRoom;
 import com.turing.forseason.domain.talk.entity.TalkEntity;
 import com.turing.forseason.domain.user.entity.UserEntity;
@@ -71,7 +72,7 @@ public class TalkAPIController {
     public ApplicationResponse<List<StompMessage>> getTalks(@RequestParam("page") int page, @RequestParam("size") int size, @RequestParam("location") String location,
                                                             @RequestParam("userUUID") String userUUID) {
 
-        List<TalkEntity> talkList = talkService.getTalks(location, page, 100);
+        List<TalkEntity> talkList = talkService.getTalks(location, page, size);
         List<StompMessage> stompMessageList = talkService.talk2Messages(location, userUUID, talkList);
 
 
@@ -102,5 +103,14 @@ public class TalkAPIController {
         String userUUID = userInfo.get("userUUID");
 
         talkService.delUser(location, userUUID);
+    }
+
+    // 커뮤니티 페이지에서 talk 리스트 렌더링용
+    @GetMapping("/talk/talklist")
+    public ApplicationResponse<List<TalkDto>> getTalkList(@RequestParam(name = "size") int size){
+        List<TalkEntity> talkEntityList = talkService.getTalkForCommunityPage(0, size);
+        List<TalkDto> talkDtoList = talkService.convert2TalkDto(talkEntityList);
+
+        return ApplicationResponse.ok(ErrorCode.SUCCESS_OK, talkDtoList);
     }
 }

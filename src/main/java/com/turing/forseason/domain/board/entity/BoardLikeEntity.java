@@ -25,12 +25,13 @@ public class BoardLikeEntity {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "board_id")
-    private CommentEntity comment;
+    private BoardEntity board;
+
 
     @Builder
-    public BoardLikeEntity(Long likeId, UserEntity user, CommentEntity comment) {
+    public BoardLikeEntity(Long likeId, UserEntity user, BoardEntity board) {
         this.likeId = likeId;
         this.user = user;
-        this.comment = comment;
+        this.board = board;
     }
 }

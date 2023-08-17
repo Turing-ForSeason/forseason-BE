@@ -1,6 +1,7 @@
 package com.turing.forseason.domain.talk.service;
 
 import com.turing.forseason.domain.talk.dto.StompMessage;
+import com.turing.forseason.domain.talk.dto.TalkDto;
 import com.turing.forseason.domain.talk.dto.TalkRoom;
 import com.turing.forseason.domain.talk.entity.TalkEntity;
 import com.turing.forseason.domain.user.entity.UserEntity;
@@ -143,6 +144,33 @@ public class TalkService {
         if(userID==null) throw new CustomException(ErrorCode.TALK_USER_NOT_FOUND);
 
         return userID;
+    }
+
+
+    // 여기서부턴 커뮤니티 페이지를 위한 것
+    public List<TalkEntity> getTalkForCommunityPage(int page, int size) {
+        Pageable pageable = PageRequest.of(page, size);
+
+        List<TalkEntity> talkEntityList = talkRepository.findAllByOrderByCreatedAtDesc(pageable);
+        Collections.reverse(talkEntityList);
+        return talkEntityList;
+    }
+
+    public List<TalkDto> convert2TalkDto(List<TalkEntity> talkEntityList) {
+        List<TalkDto> talkDtoList = new ArrayList<>();
+        for (TalkEntity item : talkEntityList) {
+            TalkDto talkDto = TalkDto.builder()
+                    .talkId(item.getTalkId())
+                    .contents(item.getTalkContents())
+                    .userNickname(item.getTalkUserNickname())
+                    .userProfilePicture(item.getTalkUserProfilePicture())
+                    .location(item.getTalkLocation())
+                    .date(item.getCreatedAt())
+                    .build();
+            talkDtoList.add(talkDto);
+        }
+
+        return talkDtoList;
     }
 
 }

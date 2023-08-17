@@ -11,6 +11,7 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @Builder
 public class StompMessage {
+    // 해당 DTO는 소켓 통신에서 사용
     /*
     유저 -> 서버 DTO
      */

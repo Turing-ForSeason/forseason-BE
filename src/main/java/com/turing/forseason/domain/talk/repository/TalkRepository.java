@@ -10,4 +10,6 @@ import java.util.List;
 @Repository
 public interface TalkRepository extends JpaRepository<TalkEntity, Long> {
     List<TalkEntity> findByTalkLocationOrderByCreatedAtDesc(String talkLocation, Pageable pageable);
+
+    List<TalkEntity> findAllByOrderByCreatedAtDesc(Pageable pageable);
 }

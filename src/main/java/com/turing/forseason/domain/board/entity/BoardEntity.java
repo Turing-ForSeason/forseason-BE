@@ -72,4 +72,8 @@ public class BoardEntity extends BaseTimeEntity {
         this.boardHashtags = boardHashtags;
         this.boardLocation = boardLocation;
     }
+
+    public void increaseLikeNum(){
+        this.boardLikeNum++;
+    }
 }
