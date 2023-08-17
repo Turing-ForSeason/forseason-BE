@@ -37,10 +37,6 @@ public class UserService {
     @Autowired
     private final UserRepository userRepository;
 
-
-
-
-
     public String getKakaoAccessToken (String code) {
         String access_Token = "";
         String refresh_Token = "";
@@ -148,21 +144,21 @@ public class UserService {
             Long userCommentNum = 1L;
 
 
-            user = UserEntity.builder()
-                    .kakao_id(profile.getId())
-                    .image(profile.getKakao_account().getProfile().getProfile_image_url())
-                    .nickname(profile.getKakao_account().getProfile().getNickname())
-                    .userNickname(profile.getKakao_account().getProfile().getNickname())
-                    .userEmail(profile.getKakao_account().getEmail())
-                    .myRole(Role.MEMBER)
-                    .userId(userId)
-                    .userName(userName)
-                    .userBoardNum(userBoardNum)
-                    .userCommentNum(userCommentNum)
-                    .build();
 
             userRepository.save(user);
         }
+        user = UserEntity.builder()
+                .kakao_id(profile.getId())
+                .image(profile.getKakao_account().getProfile().getProfile_image_url())
+                .nickname(profile.getKakao_account().getProfile().getNickname())
+                .userNickname(profile.getKakao_account().getProfile().getNickname())
+                .userEmail(profile.getKakao_account().getEmail())
+                .myRole(Role.MEMBER)
+                .userId(1L)
+                .userName("박민재")
+                .userBoardNum(1L)
+                .userCommentNum(1L)
+                .build();
 
         return createToken(user);
     }
