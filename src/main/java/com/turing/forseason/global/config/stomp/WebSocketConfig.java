@@ -37,6 +37,7 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
 
     @Override
     public void configureClientInboundChannel(ChannelRegistration registration) {
+        // 메세지 인터셉터 설정
         registration.interceptors(messagePreHandler);
     }
 
