@@ -20,6 +20,8 @@ public enum ErrorCode {
 
     AUTH_INVALID_KAKAO_CODE(HttpStatus.BAD_REQUEST, "잘못된 요청입니다.", 2004),
 
+    AUTH_EXPIRED_ACCESS_TOKEN(HttpStatus.UNAUTHORIZED, "만료된 엑세스 토큰입니다.", 2005),
+
     BOARD_BAD_REQUEST(HttpStatus.BAD_REQUEST, "잘못된 요청입니다.", 3001),
 
     // 채팅방 userList에 {userUUID, userID}로 매핑된 정보가 없음

@@ -6,6 +6,7 @@ import com.turing.forseason.domain.user.service.UserService;
 import com.turing.forseason.global.dto.ApplicationResponse;
 import com.turing.forseason.global.errorException.ErrorCode;
 import com.turing.forseason.global.jwt.JwtProperties;
+import com.turing.forseason.global.jwt.OauthToken;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -22,10 +23,10 @@ public class UserController {
     public ApplicationResponse<String> Login(@RequestParam("code") String code) {
 
         // 카카오로부터 access 토큰 발급받기
-        String oauthToken = userService.getKakaoAccessToken(code);
+        OauthToken oauthToken = userService.getKakaoAccessToken(code);
 
         // 발급 받은 accessToken 으로 카카오 회원 정보 DB 저장 후 JWT 를 생성
-        String jwtToken = userService.saveUserAndGetToken(oauthToken);
+        String jwtToken = userService.saveUserAndGetToken(oauthToken.getAccess_token());
         System.out.println(jwtToken);
 
         return ApplicationResponse.ok(ErrorCode.SUCCESS_OK, JwtProperties.TOKEN_PREFIX + jwtToken);
