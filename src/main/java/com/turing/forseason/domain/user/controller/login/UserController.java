@@ -7,7 +7,9 @@ import com.turing.forseason.global.dto.ApplicationResponse;
 import com.turing.forseason.global.errorException.ErrorCode;
 import com.turing.forseason.global.jwt.JwtProperties;
 import com.turing.forseason.global.jwt.OauthToken;
+import com.turing.forseason.global.jwt.PrincipalDetails;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -22,14 +24,14 @@ public class UserController {
     @GetMapping("/api/login/oauth2/code/kakao")
     public ApplicationResponse<String> Login(@RequestParam("code") String code) {
 
-        // 카카오로부터 access 토큰 발급받기
+        // 카카오로부터 OauthToken 발급받기
         OauthToken oauthToken = userService.getKakaoAccessToken(code);
 
-        // 발급 받은 accessToken 으로 카카오 회원 정보 DB 저장 후 JWT 를 생성
-        String jwtToken = userService.saveUserAndGetToken(oauthToken.getAccess_token());
+        // 발급 받은 OauthToken 으로 카카오 회원 정보 DB 저장 후 JWT 를 생성
+        String jwtToken = userService.saveUserAndGetToken(oauthToken);
         System.out.println(jwtToken);
 
-        return ApplicationResponse.ok(ErrorCode.SUCCESS_OK, JwtProperties.TOKEN_PREFIX + jwtToken);
+        return ApplicationResponse.ok(ErrorCode.SUCCESS_CREATED, JwtProperties.TOKEN_PREFIX + jwtToken);
     }
 
     @GetMapping("/auth/me")
@@ -39,5 +41,18 @@ public class UserController {
         return ApplicationResponse.ok(ErrorCode.SUCCESS_OK, userDetail);
     }
 
+    @GetMapping("/api/logout/kakao")
+    public ApplicationResponse<String> kakaoLogout(){
+        // 카카오 계정 로그아웃 (카카오 세션 끊기)
+        userService.kakaoLogout();
+        return ApplicationResponse.ok(ErrorCode.SUCCESS_OK, "로그아웃 되었습니다.");
+    }
+
+    @GetMapping("/api/logout/service")
+    public ApplicationResponse<String> serviceLogout(@AuthenticationPrincipal PrincipalDetails principalDetails){
+        // 서비스 로그아웃 (토큰 만료시키기)
+        userService.serviceLogout(principalDetails);
+        return ApplicationResponse.ok(ErrorCode.SUCCESS_OK, "로그아웃 되었습니다.");
+    }
 }
 

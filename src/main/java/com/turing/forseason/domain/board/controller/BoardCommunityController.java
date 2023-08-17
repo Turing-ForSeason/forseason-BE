@@ -35,11 +35,11 @@ public class BoardCommunityController {
     // 밑에 두개는 테스트 용
     @GetMapping("/make/board")
     public ApplicationResponse<BoardEntity> example(@RequestParam("contents") String contents, @RequestParam("title") String title, @AuthenticationPrincipal PrincipalDetails principalDetails) {
-        return ApplicationResponse.ok(ErrorCode.SUCCESS_OK, boardService.createExample(contents, title, principalDetails.getUser().getUserId()));
+        return ApplicationResponse.ok(ErrorCode.SUCCESS_CREATED, boardService.createExample(contents, title, principalDetails.getUser().getUserId()));
     }
 
     @GetMapping("/make/boardlike")
     public ApplicationResponse<BoardLikeEntity> example2(@RequestParam("boardId")Long boardId, @AuthenticationPrincipal PrincipalDetails principalDetails){
-        return ApplicationResponse.ok(ErrorCode.SUCCESS_OK, boardService.createExample2(boardId, principalDetails.getUser().getUserId()));
+        return ApplicationResponse.ok(ErrorCode.SUCCESS_CREATED, boardService.createExample2(boardId, principalDetails.getUser().getUserId()));
     }
 }

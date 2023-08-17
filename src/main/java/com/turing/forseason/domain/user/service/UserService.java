@@ -7,6 +7,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonParser;
 import com.turing.forseason.domain.user.domain.KakaoProfile;
+import com.turing.forseason.domain.user.domain.OauthTokenMap;
+import com.turing.forseason.domain.user.dto.OauthTokenInfoRes;
 import com.turing.forseason.domain.user.entity.Role;
 import com.turing.forseason.domain.user.dto.UserDetailDto;
 import com.turing.forseason.domain.user.entity.UserEntity;
@@ -15,6 +17,7 @@ import com.turing.forseason.global.errorException.CustomException;
 import com.turing.forseason.global.errorException.ErrorCode;
 import com.turing.forseason.global.jwt.JwtProperties;
 import com.turing.forseason.global.jwt.OauthToken;
+import com.turing.forseason.global.jwt.PrincipalDetails;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -25,9 +28,11 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.web.util.UriComponentsBuilder;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.NoSuchElementException;
 
 @RequiredArgsConstructor
@@ -69,14 +74,17 @@ public class UserService {
         }
     }
 
-    public KakaoProfile findProfile(String token) {
+    public KakaoProfile findProfile(OauthToken oauthToken) {
+
+        String accessToken = oauthToken.getAccess_token();
 
         // HTTP 메세지 처리 인터페이스 선언
         RestTemplate rt = new RestTemplate();
 
+
         // 헤더정보에 token값과 content-type 설정 (kakao에서 지정한 필수 항목)
         HttpHeaders headers = new HttpHeaders();
-        headers.add("Authorization", "Bearer " + token); //(1-4)
+        headers.add("Authorization", "Bearer " + accessToken); //(1-4)
         headers.add("Content-type", "application/x-www-form-urlencoded;charset=utf-8");
 
         // 위에서 설정한 헤더정보를 담는 HttpEntity 생성
@@ -100,9 +108,9 @@ public class UserService {
     }
 
 
-    public String saveUserAndGetToken(String token) {
+    public String saveUserAndGetToken(OauthToken oauthToken) {
 
-        KakaoProfile profile = findProfile(token);
+        KakaoProfile profile = findProfile(oauthToken);
 
         System.out.println(profile);
 
@@ -156,6 +164,7 @@ public class UserService {
 
         return jwtToken;
     }
+
     public UserEntity getUser(HttpServletRequest request) {
 
         Long userId = (Long) request.getAttribute("userId");
@@ -172,7 +181,121 @@ public class UserService {
         return new UserDetailDto(user);
     }
 
+    public void kakaoLogout(){
+        // 카카오계정 로그아웃
+        RestTemplate rt = new RestTemplate();
 
+        UriComponentsBuilder builder = UriComponentsBuilder.fromUriString("https://kauth.kakao.com/oauth/logout")
+                .queryParam("client_id", "262778662e9437ec42d6cc9d231e88bc")
+                .queryParam("logout_redirect_uri", "http://localhost:8080/api/logout/service");
+        String uri = builder.toUriString();
+        try {
+            ResponseEntity<String> response = rt.exchange(
+                    uri,
+                    HttpMethod.GET,
+                    null,
+                    String.class
+            );
+        }catch(Exception e){
+            throw new CustomException(ErrorCode.AUTH_BAD_LOGOUT_REQUEST);
+        }
+    }
 
+    public void serviceLogout(PrincipalDetails principalDetails){
+        // 서비스 로그아웃
+        OauthToken oauthToken = OauthTokenMap.getInstance().getOauthTokens().get(principalDetails.getUser().getUserId());
+
+        RestTemplate rt = new RestTemplate();
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.add("Authorization", "Bearer " + oauthToken.getAccess_token());
+
+        try {
+            ResponseEntity<String> response = rt.exchange(
+                    "https://kapi.kakao.com/v1/user/logout",
+                    HttpMethod.POST,
+                    null,
+                    String.class
+            );
+
+            System.out.println("회원번호 " + response.getBody() + " 로그아웃");
+            deleteOauthToken(principalDetails.getUser().getUserId());
+
+        } catch (Exception e) {
+            throw new CustomException(ErrorCode.AUTH_EXPIRED_ACCESS_TOKEN);
+        }
+
+    }
+
+    public OauthToken addOauthToken(OauthToken oauthToken, Long userId){
+        // OauthTokenMap에 OauthToken 저장
+        HashMap<Long, OauthToken> oauthTokens = OauthTokenMap.getInstance().getOauthTokens();
+        if(!oauthTokens.containsKey(userId)) {
+            oauthTokens.put(userId, oauthToken);
+        }
+        return oauthToken;
+    }
+
+    public void deleteOauthToken(Long userId) {
+        // OauthTokenMap에서 삭제
+        OauthTokenMap.getInstance().getOauthTokens().remove(userId);
+    }
+
+    public OauthToken updateOauthToken(Long userId, OauthToken newOauthToken) {
+        // OauthTokenMap에서 업데이트 (refresh할때 사용)
+        deleteOauthToken(userId);
+        addOauthToken(newOauthToken, userId);
+        return newOauthToken;
+    }
+
+    public boolean isExpired(OauthToken oauthToken) {
+
+        // OauthToken 정보를 받아와서 만료됐는지 검사
+        // 만료되었으면 ture, 아직 유효하면 false
+        RestTemplate rt = new RestTemplate();
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.add("Authorization", "Bearer " + oauthToken.getAccess_token());
+
+        ResponseEntity<OauthTokenInfoRes> response = rt.exchange(
+                "https://kapi.kakao.com/v1/user/access_token_info",
+                HttpMethod.GET,
+                null,
+                OauthTokenInfoRes.class
+        );
+
+        if (response.getStatusCode().value() != 200) {
+            if(response.getBody().getCode()==-401)return true;
+            else throw new CustomException(ErrorCode.AUTH_INVALID_KAKAO_CODE);
+        }
+        else return false;
+    }
+
+    public OauthToken getRefresh(OauthToken oauthToken) {
+
+        // OauthToken을 refresh하는 메서드.
+        RestTemplate rt = new RestTemplate();
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.add("Content-type", "application/x-www-form-urlencoded;charset=utf-8");
+
+        MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
+        params.add("grant_type", "authorization_code");
+        params.add("client_id", "262778662e9437ec42d6cc9d231e88bc");
+        params.add("refresh_token", oauthToken.getRefresh_token());
+        params.add("client_secret", "vhJNa6nXjI0QFOAxpH2CkTtiOpd42LRb");
+
+        HttpEntity<MultiValueMap<String, String>> refreshRequest = new HttpEntity<>(params, headers);
+
+        ResponseEntity<OauthToken> refreshResponse = rt.exchange(
+                "https://kapi.kakao.com/v2/user/me",
+                HttpMethod.POST,
+                refreshRequest,
+                OauthToken.class
+        );
+        OauthToken refreshOauthToken = refreshResponse.getBody();
+        refreshOauthToken.setScope(oauthToken.getScope());
+        return refreshOauthToken;
+    }
 
 }
