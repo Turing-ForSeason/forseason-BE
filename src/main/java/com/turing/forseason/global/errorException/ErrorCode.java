@@ -37,6 +37,8 @@ public enum ErrorCode {
 
     // 이미 접속중인 사용자
     TALK_DUPLICATED_USER(HttpStatus.NOT_ACCEPTABLE, "중복된 사용자입니다.", 5004),
+
+    UNKNOWN_ERROR(HttpStatus.BAD_GATEWAY, "알 수 없는 오류입니다",6001),
     ;
 
 

@@ -9,7 +9,7 @@ import com.turing.forseason.global.errorException.CustomException;
 import com.turing.forseason.global.errorException.ErrorCode;
 import com.turing.forseason.global.errorException.StompErrorCode;
 import com.turing.forseason.global.errorException.StompException;
-import com.turing.forseason.domain.talk.mapper.TalkRooms;
+import com.turing.forseason.domain.talk.map.TalkRooms;
 import com.turing.forseason.domain.talk.repository.TalkRepository;
 import com.turing.forseason.domain.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;

@@ -41,14 +41,14 @@ public class UserController {
         return ApplicationResponse.ok(ErrorCode.SUCCESS_OK, userDetail);
     }
 
-    @GetMapping("/api/logout/kakao")
+    @GetMapping("/logout/kakao")
     public ApplicationResponse<String> kakaoLogout(){
         // 카카오 계정 로그아웃 (카카오 세션 끊기)
         userService.kakaoLogout();
         return ApplicationResponse.ok(ErrorCode.SUCCESS_OK, "로그아웃 되었습니다.");
     }
 
-    @GetMapping("/api/logout/service")
+    @GetMapping("/logout/service")
     public ApplicationResponse<String> serviceLogout(@AuthenticationPrincipal PrincipalDetails principalDetails){
         // 서비스 로그아웃 (토큰 만료시키기)
         userService.serviceLogout(principalDetails);

@@ -1,4 +1,4 @@
-package com.turing.forseason.domain.talk.mapper;
+package com.turing.forseason.domain.talk.map;
 
 import com.turing.forseason.domain.talk.dto.TalkRoom;
 import lombok.Getter;

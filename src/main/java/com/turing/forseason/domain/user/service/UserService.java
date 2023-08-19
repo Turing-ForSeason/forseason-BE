@@ -19,14 +19,12 @@ import com.turing.forseason.global.jwt.JwtProperties;
 import com.turing.forseason.global.jwt.OauthToken;
 import com.turing.forseason.global.jwt.PrincipalDetails;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
+import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
@@ -143,6 +141,7 @@ public class UserService {
 
             userRepository.save(user);
         }
+        addOauthToken(oauthToken, user.getUserId());
 
         return createToken(user);
     }
@@ -187,7 +186,7 @@ public class UserService {
 
         UriComponentsBuilder builder = UriComponentsBuilder.fromUriString("https://kauth.kakao.com/oauth/logout")
                 .queryParam("client_id", "262778662e9437ec42d6cc9d231e88bc")
-                .queryParam("logout_redirect_uri", "http://localhost:8080/api/logout/service");
+                .queryParam("logout_redirect_uri", "http://localhost:8080/logout/service");
         String uri = builder.toUriString();
         try {
             ResponseEntity<String> response = rt.exchange(
@@ -196,7 +195,9 @@ public class UserService {
                     null,
                     String.class
             );
-        }catch(Exception e){
+        }catch(HttpClientErrorException ex){
+            System.out.println("카카오 로그아웃 실패");
+            System.out.println(ex.getResponseBodyAsString());
             throw new CustomException(ErrorCode.AUTH_BAD_LOGOUT_REQUEST);
         }
     }
@@ -204,17 +205,19 @@ public class UserService {
     public void serviceLogout(PrincipalDetails principalDetails){
         // 서비스 로그아웃
         OauthToken oauthToken = OauthTokenMap.getInstance().getOauthTokens().get(principalDetails.getUser().getUserId());
+        System.out.println(oauthToken);
 
         RestTemplate rt = new RestTemplate();
 
         HttpHeaders headers = new HttpHeaders();
         headers.add("Authorization", "Bearer " + oauthToken.getAccess_token());
+        HttpEntity<MultiValueMap<String, String>> logoutRequest = new HttpEntity<>(headers);
 
         try {
             ResponseEntity<String> response = rt.exchange(
                     "https://kapi.kakao.com/v1/user/logout",
                     HttpMethod.POST,
-                    null,
+                    logoutRequest,
                     String.class
             );
 
@@ -257,18 +260,23 @@ public class UserService {
         HttpHeaders headers = new HttpHeaders();
         headers.add("Authorization", "Bearer " + oauthToken.getAccess_token());
 
-        ResponseEntity<OauthTokenInfoRes> response = rt.exchange(
-                "https://kapi.kakao.com/v1/user/access_token_info",
-                HttpMethod.GET,
-                null,
-                OauthTokenInfoRes.class
-        );
-
-        if (response.getStatusCode().value() != 200) {
-            if(response.getBody().getCode()==-401)return true;
-            else throw new CustomException(ErrorCode.AUTH_INVALID_KAKAO_CODE);
+        try {
+            ResponseEntity<OauthTokenInfoRes> response = rt.exchange(
+                    "https://kapi.kakao.com/v1/user/access_token_info",
+                    HttpMethod.GET,
+                    null,
+                    OauthTokenInfoRes.class
+            );
+            return false;
+        } catch (HttpClientErrorException ex) {
+            if (ex.getStatusCode() == HttpStatus.UNAUTHORIZED && ex.getResponseBodyAsString().contains("-401")) {
+                return true;
+            } else {
+                throw new CustomException(ErrorCode.AUTH_INVALID_KAKAO_CODE);
+            }
+        } catch (Exception e) {
+            throw new CustomException(ErrorCode.UNKNOWN_ERROR);
         }
-        else return false;
     }
 
     public OauthToken getRefresh(OauthToken oauthToken) {
@@ -280,7 +288,7 @@ public class UserService {
         headers.add("Content-type", "application/x-www-form-urlencoded;charset=utf-8");
 
         MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
-        params.add("grant_type", "authorization_code");
+        params.add("grant_type", "refresh_token");
         params.add("client_id", "262778662e9437ec42d6cc9d231e88bc");
         params.add("refresh_token", oauthToken.getRefresh_token());
         params.add("client_secret", "vhJNa6nXjI0QFOAxpH2CkTtiOpd42LRb");
@@ -288,7 +296,7 @@ public class UserService {
         HttpEntity<MultiValueMap<String, String>> refreshRequest = new HttpEntity<>(params, headers);
 
         ResponseEntity<OauthToken> refreshResponse = rt.exchange(
-                "https://kapi.kakao.com/v2/user/me",
+                "https://kauth.kakao.com/oauth/token",
                 HttpMethod.POST,
                 refreshRequest,
                 OauthToken.class
@@ -297,5 +305,4 @@ public class UserService {
         refreshOauthToken.setScope(oauthToken.getScope());
         return refreshOauthToken;
     }
-
 }
