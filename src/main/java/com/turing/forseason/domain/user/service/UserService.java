@@ -2,13 +2,10 @@ package com.turing.forseason.domain.user.service;
 
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.algorithms.Algorithm;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonParser;
 import com.turing.forseason.domain.user.domain.KakaoProfile;
 import com.turing.forseason.domain.user.domain.OauthTokenMap;
 import com.turing.forseason.domain.user.dto.OauthTokenInfoRes;
+import com.turing.forseason.domain.user.dto.UpdateUserInfoRequest;
 import com.turing.forseason.domain.user.entity.Role;
 import com.turing.forseason.domain.user.dto.UserDetailDto;
 import com.turing.forseason.domain.user.entity.UserEntity;
@@ -40,6 +37,26 @@ public class UserService {
 
     private final UserRepository userRepository;
 
+    public UserEntity getUserById(Long userId) {
+
+        UserEntity user = userRepository.findByUserId(userId).orElseThrow(
+                () -> new CustomException(ErrorCode.AUTH_USER_NOT_FOUND)
+        );
+
+        return user;
+    }
+
+    @Transactional
+    public UserEntity update(Long userId, UpdateUserInfoRequest request) {
+
+        UserEntity user = userRepository.findByUserId(userId).orElseThrow(
+                () -> new CustomException(ErrorCode.AUTH_USER_NOT_FOUND)
+        );
+
+        user.update(request.getUserName(), request.getUserNickname(), request.getNickname());
+
+        return user;
+    }
 
     public OauthToken getKakaoAccessToken (String code) {
         RestTemplate rt = new RestTemplate();
@@ -50,7 +67,7 @@ public class UserService {
         MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
         params.add("grant_type", "authorization_code");
         params.add("client_id", "262778662e9437ec42d6cc9d231e88bc");
-        params.add("redirect_uri", "http://localhost:3000/api/login/oauth2/code/kakao");
+        params.add("redirect_uri", "http://localhost:8080/api/login/oauth2/code/kakao");
         params.add("code", code);
         params.add("client_secret", "vhJNa6nXjI0QFOAxpH2CkTtiOpd42LRb");
 

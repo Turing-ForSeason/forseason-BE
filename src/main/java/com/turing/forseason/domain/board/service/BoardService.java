@@ -14,6 +14,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.Optional;
 
 @Service
@@ -59,6 +60,16 @@ public class BoardService {
                 .likeId(likeId)
                 .build();
         return boardDto;
+    }
+
+    public List<BoardEntity> findByUserId(Long userId) {
+        // 마이페이지 내 글 목록 보기
+
+        List<BoardEntity> board = boardRepository.findByUser_UserId(userId).orElseThrow(
+                () -> new NoSuchElementException("해당 사용자의 글이 존재하지 않습니다.")
+        );
+
+        return board;
     }
 
     // 밑에 2개는 테스트 용
