@@ -133,7 +133,6 @@ public class UserService {
                     .userNickname(profile.getKakao_account().getProfile().getNickname())
                     .userEmail(profile.getKakao_account().getEmail())
                     .myRole(Role.MEMBER)
-//                    .userId(userId)
                     .userName(userName)
                     .userBoardNum(userBoardNum)
                     .userCommentNum(userCommentNum)

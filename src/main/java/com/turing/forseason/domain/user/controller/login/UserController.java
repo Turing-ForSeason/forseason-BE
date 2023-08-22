@@ -1,5 +1,7 @@
 package com.turing.forseason.domain.user.controller.login;
 
+import com.auth0.jwt.JWT;
+import com.auth0.jwt.interfaces.DecodedJWT;
 import com.turing.forseason.domain.user.dto.UserDetailDto;
 import com.turing.forseason.domain.user.entity.UserEntity;
 import com.turing.forseason.domain.user.service.UserService;
@@ -10,12 +12,10 @@ import com.turing.forseason.global.jwt.OauthToken;
 import com.turing.forseason.global.jwt.PrincipalDetails;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
-
+@CrossOrigin(origins = "*")
 @RestController
 public class UserController {
     @Autowired
@@ -40,6 +40,26 @@ public class UserController {
         UserDetailDto userDetail = userService.getUserDetail(user);
         return ApplicationResponse.ok(ErrorCode.SUCCESS_OK, userDetail);
     }
+
+    @PostMapping("/decodeToken")
+    public String decodeToken(HttpServletRequest request) {
+        // Authorization 헤더에서 토큰 값을 가져옵니다.
+        String authHeader = request.getHeader("Authorization");
+        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+            return "{ \"error\": \"Bearer token missing\" }";        }
+        String token = authHeader.substring(7);
+        try {
+            DecodedJWT decodedJWT = JWT.decode(token);
+            String nickname = decodedJWT.getClaim("nickname").asString();
+            String email = decodedJWT.getClaim("sub").asString();
+            Long id = decodedJWT.getClaim("id").asLong();
+            String json = "{ \"username\": \"" + nickname + "\", \"email\": \"" + email + "\", \"id\": \"" + id + "\" }";
+            return json;
+        } catch (Exception e) {
+            return "{ \"error\": \"Token invalid\" }";
+        }
+    }
+
 
     @GetMapping("/logout/kakao")
     public ApplicationResponse<String> kakaoLogout(){
