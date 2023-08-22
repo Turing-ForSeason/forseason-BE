@@ -44,7 +44,7 @@ public class UserEntity extends BaseTimeEntity {
     @Column(name = "image_url", columnDefinition="TEXT")
     private String image;
 
-    @Column(name = "humbnail_url", columnDefinition = "TEXT")
+    @Column(name = "thumbnail_url", columnDefinition = "TEXT")
     private String thumbnail;
 
     @Column(nullable = false, unique = true)
@@ -75,4 +75,14 @@ public class UserEntity extends BaseTimeEntity {
         this.nickname = nickname;
         this.myRole = myRole;
     }
+
+    public void update(String userName, String userNickname, String nickname) {
+        //사용자 정보 변경
+        this.userName = userName;
+        this.userNickname = userNickname;
+        this.nickname = nickname;
+
+    }
+
+    //사용자 썸네일/이미지 변경
 }

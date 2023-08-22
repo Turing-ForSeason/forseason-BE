@@ -8,7 +8,6 @@ import org.hibernate.annotations.Where;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
-import java.util.Date;
 
 @Getter
 @Entity
@@ -29,8 +28,8 @@ public class BoardEntity extends BaseTimeEntity {
     @Column(name = "board_contents", nullable = false, columnDefinition = "TEXT")
     private String boardContents;
 
-//    @Column(name = "board_date", nullable = false, columnDefinition = "timestamp")
-//    private LocalDateTime boardDate;
+    @Column(name = "board_date", columnDefinition = "timestamp") // 테스트하려고 nullable = false 없애고 밑에 생성자도 추가함
+    private LocalDateTime boardDate;
 
     @Column(name = "board_picture", nullable = false, columnDefinition = "TEXT")
     private String boardPicture;
@@ -59,7 +58,7 @@ public class BoardEntity extends BaseTimeEntity {
 
     @Builder
     public BoardEntity(Long boardId, String boardTitle, String boardContents, String boardPicture, Long boardLikeNum, Long boardCommentNum,
-                       String boardUserProfilePicture, String boardUserNickname, UserEntity user, String boardHashtags, String boardLocation) {
+                       String boardUserProfilePicture, String boardUserNickname, UserEntity user, String boardHashtags, String boardLocation, LocalDateTime boardDate) {
         this.boardId = boardId;
         this.boardTitle = boardTitle;
         this.boardContents = boardContents;
@@ -71,6 +70,7 @@ public class BoardEntity extends BaseTimeEntity {
         this.user = user;
         this.boardHashtags = boardHashtags;
         this.boardLocation = boardLocation;
+        this.boardDate = boardDate;
     }
 
     public void increaseLikeNum(){

@@ -1,7 +1,6 @@
 package com.turing.forseason.domain.board.repository;
 
 import com.turing.forseason.domain.board.entity.BoardEntity;
-import com.turing.forseason.domain.talk.entity.TalkEntity;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -17,4 +16,6 @@ public interface BoardRepository extends JpaRepository<BoardEntity, Long> {
     BoardEntity save(BoardEntity boardEntity);
 
     Optional<BoardEntity> findByBoardId(Long boardId);
+
+    Optional<List<BoardEntity>> findByUser_UserId(Long userId);
 }
