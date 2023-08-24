@@ -2,6 +2,8 @@ package com.turing.forseason.domain.user.service;
 
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.algorithms.Algorithm;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.turing.forseason.domain.user.domain.KakaoProfile;
 import com.turing.forseason.domain.user.domain.OauthTokenMap;
 import com.turing.forseason.domain.user.dto.OauthTokenInfoRes;
@@ -67,26 +69,29 @@ public class UserService {
         MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
         params.add("grant_type", "authorization_code");
         params.add("client_id", "262778662e9437ec42d6cc9d231e88bc");
-        params.add("redirect_uri", "http://localhost:8080/api/login/oauth2/code/kakao");
+        params.add("redirect_uri", "http://localhost:3000/api/login/oauth2/code/kakao");
         params.add("code", code);
         params.add("client_secret", "vhJNa6nXjI0QFOAxpH2CkTtiOpd42LRb");
 
         HttpEntity<MultiValueMap<String, String>> kakaoTokenRequest =
                 new HttpEntity<>(params, headers);
 
+        ResponseEntity<String> accessTokenResponse = rt.exchange(
+                "https://kauth.kakao.com/oauth/token",
+                HttpMethod.POST,
+                kakaoTokenRequest,
+                String.class
+        );
+
+        ObjectMapper objectMapper = new ObjectMapper();
+        OauthToken oauthToken = null;
         try {
-            ResponseEntity<OauthToken> accessTokenResponse = rt.exchange(
-                    "https://kauth.kakao.com/oauth/token",
-                    HttpMethod.POST,
-                    kakaoTokenRequest,
-                    OauthToken.class
-            );
-
-            return accessTokenResponse.getBody();
-
-        }  catch (Exception e){
-            throw new CustomException(ErrorCode.AUTH_INVALID_KAKAO_CODE);
+            oauthToken = objectMapper.readValue(accessTokenResponse.getBody(), OauthToken.class);
+        } catch (JsonProcessingException e) {
+            e.printStackTrace();
         }
+
+        return oauthToken;
     }
 
     public KakaoProfile findProfile(OauthToken oauthToken) {
@@ -130,18 +135,17 @@ public class UserService {
         System.out.println(profile);
 
         UserEntity user = null;
+        System.out.println(profile);
 
         try {
             user = userRepository.findByUserEmail(profile.getKakao_account().getEmail()).get();
         } catch (NoSuchElementException e) {
 
-            Long userId = 1L;
-            String userName = "박민재";
+            String userName = "이름넣어줄건가요";
             Long userBoardNum = 1L;
             Long userCommentNum = 1L;
 
 
-            // 여기서 의문... userName을 어떻게 받아올 생각인지?
             user = UserEntity.builder()
                     .kakao_id(profile.getId())
                     .image(profile.getKakao_account().getProfile().getProfile_image_url())
@@ -157,9 +161,9 @@ public class UserService {
 
             userRepository.save(user);
         }
-        addOauthToken(oauthToken, user.getUserId());
 
-        return createToken(user);
+        return createToken(user); // 리턴값 고쳤습니다
+
     }
 
     public String createToken(UserEntity user) {
@@ -241,7 +245,7 @@ public class UserService {
             deleteOauthToken(principalDetails.getUser().getUserId());
 
         } catch (Exception e) {
-            throw new CustomException(ErrorCode.AUTH_EXPIRED_ACCESS_TOKEN);
+            throw new CustomException(ErrorCode.AUTH_EXPIRED_ACCESS_TOKEN); // 로그아웃 추가 해야함
         }
 
     }
