@@ -1,8 +1,5 @@
 package com.turing.forseason.domain.user.controller.mypage;
 
-<<<<<<< Updated upstream
-public class MyPageBoardListController {
-=======
 import com.turing.forseason.domain.board.entity.BoardEntity;
 import com.turing.forseason.domain.board.service.BoardService;
 import com.turing.forseason.global.dto.ApplicationResponse;
@@ -13,7 +10,6 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
-
 @RequiredArgsConstructor
 @RestController
 public class MyPageBoardListController {
@@ -28,5 +24,4 @@ public class MyPageBoardListController {
 
         return ApplicationResponse.ok(ErrorCode.SUCCESS_OK,boardlist);
     }
->>>>>>> Stashed changes
 }

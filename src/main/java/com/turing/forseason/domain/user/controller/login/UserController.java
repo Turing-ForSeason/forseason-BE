@@ -26,8 +26,8 @@ public class UserController {
 
         // 카카오로부터 OauthToken 발급받기
         OauthToken oauthToken = userService.getKakaoAccessToken(code);
-
         // 발급 받은 OauthToken 으로 카카오 회원 정보 DB 저장 후 JWT 를 생성
+        System.out.println(oauthToken);
         String jwtToken = userService.saveUserAndGetToken(oauthToken);
         System.out.println(jwtToken);
 
