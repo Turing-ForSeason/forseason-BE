@@ -141,7 +141,7 @@ public class UserService {
             user = userRepository.findByUserEmail(profile.getKakao_account().getEmail()).get();
         } catch (NoSuchElementException e) {
 
-            String userName = "최연제";
+            String userName = "이름넣어줄건가요";
             Long userBoardNum = 1L;
             Long userCommentNum = 1L;
 
@@ -162,7 +162,8 @@ public class UserService {
             userRepository.save(user);
         }
 
-        return createToken(user);
+        return createToken(user); // 리턴값 고쳤습니다
+
     }
 
     public String createToken(UserEntity user) {
@@ -244,7 +245,7 @@ public class UserService {
             deleteOauthToken(principalDetails.getUser().getUserId());
 
         } catch (Exception e) {
-            throw new CustomException(ErrorCode.AUTH_EXPIRED_ACCESS_TOKEN);
+            throw new CustomException(ErrorCode.AUTH_EXPIRED_ACCESS_TOKEN); // 로그아웃 추가 해야함
         }
 
     }
