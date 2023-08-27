@@ -57,14 +57,13 @@ public class BoardEntity extends BaseTimeEntity {
     private String boardLocation;
 
     @Builder
-    public BoardEntity(Long boardId, String boardTitle, String boardContents, String boardPicture, Long boardLikeNum, Long boardCommentNum,
+    public BoardEntity(String boardTitle, String boardContents, String boardPicture, Long boardLikeNum, Long boardCommentNum,
                        String boardUserProfilePicture, String boardUserNickname, UserEntity user, String boardHashtags, String boardLocation, LocalDateTime boardDate) {
-        this.boardId = boardId;
         this.boardTitle = boardTitle;
         this.boardContents = boardContents;
         this.boardPicture = boardPicture;
-        this.boardLikeNum = boardLikeNum;
-        this.boardCommentNum = boardCommentNum;
+        this.boardLikeNum = 0L;
+        this.boardCommentNum = 0L;
         this.boardUserProfilePicture = boardUserProfilePicture;
         this.boardUserNickname = boardUserNickname;
         this.user = user;
@@ -75,5 +74,12 @@ public class BoardEntity extends BaseTimeEntity {
 
     public void increaseLikeNum(){
         this.boardLikeNum++;
+    }
+
+    public void setUser(UserEntity user) {
+        this.user = user;
+    }
+    public void setBoardPicture(String boardPicture) {
+        this.boardPicture = boardPicture;
     }
 }
