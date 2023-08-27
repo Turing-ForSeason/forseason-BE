@@ -50,7 +50,7 @@ public class BoardService {
                 .boardId(boardEntity.getBoardId())
                 .boardTitle(boardEntity.getBoardTitle())
                 .boardPicture(boardEntity.getBoardPicture())
-                .boardContent(boardEntity.getBoardContents())
+                .boardContents(boardEntity.getBoardContents())
                 .boardHashtags(boardEntity.getBoardHashtags())
                 .boardLocation(boardEntity.getBoardLocation())
                 .boardCommentNum(boardEntity.getBoardCommentNum())
@@ -70,6 +70,22 @@ public class BoardService {
         );
 
         return board;
+    }
+
+    // uploadCoordiBoard 메서드 수정 중
+    public void uploadCoordiBoard(BoardEntity boardEntity) {
+        BoardEntity newBoardEntity = BoardEntity.builder()
+                .boardTitle(boardEntity.getBoardTitle())
+                .boardContents(boardEntity.getBoardContents())
+                .boardPicture(boardEntity.getBoardPicture())
+                .boardUserProfilePicture(boardEntity.getBoardUserProfilePicture())
+                .boardUserNickname(boardEntity.getBoardUserNickname())
+                .user(boardEntity.getUser())
+                .boardHashtags(boardEntity.getBoardHashtags())
+                .boardLocation(boardEntity.getBoardLocation())
+                .build();
+
+        boardRepository.save(newBoardEntity);
     }
 
     // 밑에 2개는 테스트 용

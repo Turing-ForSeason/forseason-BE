@@ -13,7 +13,7 @@ public class BoardDto {
 
     private String boardTitle;
 
-    private String boardContent;
+    private String boardContents;
 
     private String boardPicture;
 
@@ -36,7 +36,7 @@ public class BoardDto {
                 .boardId(boardEntity.getBoardId())
                 .boardTitle(boardEntity.getBoardTitle())
                 .boardPicture(boardEntity.getBoardPicture())
-                .boardContent(boardEntity.getBoardContents())
+                .boardContents(boardEntity.getBoardContents())
                 .boardHashtags(boardEntity.getBoardHashtags())
                 .boardLocation(boardEntity.getBoardLocation())
                 .boardCommentNum(boardEntity.getBoardCommentNum())
