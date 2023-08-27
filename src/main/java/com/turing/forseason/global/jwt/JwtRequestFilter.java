@@ -10,6 +10,7 @@ import com.turing.forseason.global.errorException.CustomException;
 import com.turing.forseason.global.errorException.ErrorCode;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.authentication.AuthenticationServiceException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -80,12 +81,10 @@ public class JwtRequestFilter extends OncePerRequestFilter {
 
         } catch (TokenExpiredException e) {
             e.printStackTrace();
-            request.setAttribute(JwtProperties.HEADER_STRING, "토큰이 만료되었습니다.");
-            throw new CustomException(ErrorCode.INVALID_JWT_EXPIRED);
+            request.setAttribute("exception", ErrorCode.INVALID_JWT_EXPIRED);
         } catch (JWTVerificationException e) {
             e.printStackTrace();
-            request.setAttribute(JwtProperties.HEADER_STRING, "유효하지 않은 토큰입니다.");
-            throw new CustomException(ErrorCode.INVALID_JWT_TOKEN);
+            request.setAttribute("exception", ErrorCode.INVALID_JWT_TOKEN);
         }
 
         request.setAttribute("userCode", userId);

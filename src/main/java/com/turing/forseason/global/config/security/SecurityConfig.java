@@ -3,6 +3,7 @@ package com.turing.forseason.global.config.security;
 
 
 import com.turing.forseason.domain.user.repository.UserRepository;
+import com.turing.forseason.global.jwt.JwtAccessDeniedHandler;
 import com.turing.forseason.global.jwt.JwtAuthenticationEntryPoint;
 import com.turing.forseason.global.jwt.JwtRequestFilter;
 import lombok.RequiredArgsConstructor;
@@ -14,6 +15,7 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.access.ExceptionTranslationFilter;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
@@ -55,7 +57,8 @@ public class SecurityConfig {
                 .and()
                 // 예외 처리 핸들러 설정
                 .exceptionHandling()
-                .authenticationEntryPoint(new JwtAuthenticationEntryPoint());
+                .authenticationEntryPoint(new JwtAuthenticationEntryPoint())
+                .accessDeniedHandler(new JwtAccessDeniedHandler());
 
         http.addFilterBefore(new JwtRequestFilter(userRepository), UsernamePasswordAuthenticationFilter.class);
 
