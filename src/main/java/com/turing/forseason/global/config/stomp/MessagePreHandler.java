@@ -9,7 +9,7 @@ import com.turing.forseason.domain.talk.dto.StompMessage;
 import com.turing.forseason.global.errorException.StompErrorCode;
 import com.turing.forseason.global.errorException.StompException;
 import com.turing.forseason.domain.talk.service.TalkService;
-import com.turing.forseason.global.jwt.JwtProperties;
+import com.turing.forseason.global.jwt.JwtTokenProvider;
 import lombok.RequiredArgsConstructor;
 import org.springframework.messaging.Message;
 import org.springframework.messaging.MessageChannel;
@@ -26,6 +26,7 @@ public class MessagePreHandler implements ChannelInterceptor {
     // 서버가 메세지를 전달 받으면 로직 실행전에 실행되는 클래스.
     private final TalkService talkService;
     private final ObjectMapper objectMapper = new ObjectMapper();
+    private final JwtTokenProvider tokenProvider;
 
     @Override
     public Message<?> preSend(Message<?> message, MessageChannel channel) {
@@ -37,18 +38,18 @@ public class MessagePreHandler implements ChannelInterceptor {
 
 
         // Jwt 헤더 뽑아내기
-        String jwtHeader = headerAccessor.getFirstNativeHeader(JwtProperties.HEADER_STRING);
+        String jwtHeader = headerAccessor.getFirstNativeHeader(JwtTokenProvider.HEADER_STRING);
 
         // JWT 헤더가 없거나 bearer가 아닐경우
-        if(jwtHeader == null || !jwtHeader.startsWith(JwtProperties.TOKEN_PREFIX)){
+        if(jwtHeader == null || !jwtHeader.startsWith(JwtTokenProvider.TOKEN_PREFIX)){
             throw new StompException(StompErrorCode.INVALID_TOKEN);
         }
         else{
-            String token = jwtHeader.replace(JwtProperties.TOKEN_PREFIX, "");
+            String token = jwtHeader.replace(JwtTokenProvider.TOKEN_PREFIX, "");
 
             try {
                 // 토큰 유효성 검사
-                JWT.require(Algorithm.HMAC512(JwtProperties.SECRET)).build().verify(token);
+                tokenProvider.validateToken(token);
             } catch (TokenExpiredException e) {
                 // 토큰 만료시
                 throw new StompException(StompErrorCode.INVALID_TOKEN_EXPIRED);

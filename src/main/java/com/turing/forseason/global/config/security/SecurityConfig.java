@@ -28,8 +28,7 @@ import java.util.Arrays;
 @RequiredArgsConstructor
 public class SecurityConfig {
 
-    @Autowired
-    private final UserRepository userRepository;
+    private final JwtSecurityConfig jwtSecurityConfig;
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
@@ -54,13 +53,14 @@ public class SecurityConfig {
                         "https://kauth.kakao.com/oauth/token", "https://kapi.kakao.com/v2/user/me", "/stomp/talk/**", "/talk/user/delete").permitAll()
                 // 위 URL 제외하고는 모두 인증필요
                 .anyRequest().authenticated()
-                .and()
-                // 예외 처리 핸들러 설정
-                .exceptionHandling()
-                .authenticationEntryPoint(new JwtAuthenticationEntryPoint())
-                .accessDeniedHandler(new JwtAccessDeniedHandler());
 
-        http.addFilterBefore(new JwtRequestFilter(userRepository), UsernamePasswordAuthenticationFilter.class);
+                .and()
+                .exceptionHandling()
+                .accessDeniedHandler(new JwtAccessDeniedHandler())
+                .authenticationEntryPoint(new JwtAuthenticationEntryPoint())
+
+                .and()
+                .apply(jwtSecurityConfig);
 
         return http.build();
     }

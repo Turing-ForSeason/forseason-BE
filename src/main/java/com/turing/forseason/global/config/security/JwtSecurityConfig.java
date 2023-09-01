@@ -1,26 +1,24 @@
 package com.turing.forseason.global.config.security;
 
 import com.turing.forseason.domain.user.repository.UserRepository;
+import com.turing.forseason.global.jwt.JwtAccessDeniedHandler;
+import com.turing.forseason.global.jwt.JwtAuthenticationEntryPoint;
 import com.turing.forseason.global.jwt.JwtRequestFilter;
+import com.turing.forseason.global.jwt.JwtTokenProvider;
+import lombok.RequiredArgsConstructor;
+import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.SecurityConfigurerAdapter;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.web.DefaultSecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
-// Configuration 어노테이션 안붙여도 되나...?
+@Configuration
+@RequiredArgsConstructor
 public class JwtSecurityConfig extends SecurityConfigurerAdapter<DefaultSecurityFilterChain, HttpSecurity> {
-    private UserRepository userRepository;
-    public JwtSecurityConfig(UserRepository userRepository) {
-        this.userRepository = userRepository;
-    }
+    private final JwtTokenProvider jwtTokenProvider;
 
     @Override
-    public void configure(HttpSecurity http) {
-        http.addFilterBefore(
-                // UsernamePasswordAuthenticationFilter이전에 JwtRequestFilter를 거치도록 등록
-                // UsernamePasswordAuthenticationFilter: 사용자의 아이디와 비밀번호를 기반으로 인증하는 역할
-                new JwtRequestFilter(userRepository),
-                UsernamePasswordAuthenticationFilter.class
-        );
+    public void configure(HttpSecurity http) throws Exception{
+        http.addFilterBefore(new JwtRequestFilter(jwtTokenProvider), UsernamePasswordAuthenticationFilter.class);
     }
 }

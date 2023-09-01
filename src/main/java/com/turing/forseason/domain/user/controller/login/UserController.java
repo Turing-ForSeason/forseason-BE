@@ -7,7 +7,7 @@ import com.turing.forseason.domain.user.entity.UserEntity;
 import com.turing.forseason.domain.user.service.UserService;
 import com.turing.forseason.global.dto.ApplicationResponse;
 import com.turing.forseason.global.errorException.ErrorCode;
-import com.turing.forseason.global.jwt.JwtProperties;
+import com.turing.forseason.global.jwt.JwtTokenProvider;
 import com.turing.forseason.global.jwt.OauthToken;
 import com.turing.forseason.global.jwt.PrincipalDetails;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -32,7 +32,7 @@ public class UserController {
         System.out.println("jwt 토큰 발급");
         System.out.println(jwtToken);
 
-        return ApplicationResponse.ok(ErrorCode.SUCCESS_CREATED, JwtProperties.TOKEN_PREFIX + jwtToken);
+        return ApplicationResponse.ok(ErrorCode.SUCCESS_CREATED, JwtTokenProvider.TOKEN_PREFIX + jwtToken);
     }
 
     @GetMapping("/auth/me")

@@ -14,7 +14,7 @@ import com.turing.forseason.domain.user.entity.UserEntity;
 import com.turing.forseason.domain.user.repository.UserRepository;
 import com.turing.forseason.global.errorException.CustomException;
 import com.turing.forseason.global.errorException.ErrorCode;
-import com.turing.forseason.global.jwt.JwtProperties;
+import com.turing.forseason.global.jwt.JwtTokenProvider;
 import com.turing.forseason.global.jwt.OauthToken;
 import com.turing.forseason.global.jwt.PrincipalDetails;
 import lombok.RequiredArgsConstructor;
@@ -38,6 +38,7 @@ import java.util.NoSuchElementException;
 public class UserService {
 
     private final UserRepository userRepository;
+    private final JwtTokenProvider tokenProvider;
 
     public UserEntity getUserById(Long userId) {
 
@@ -162,26 +163,8 @@ public class UserService {
             userRepository.save(user);
         }
 
-        return createToken(user); // 리턴값 고쳤습니다
+        return tokenProvider.generateToken(user); // 리턴값 고쳤습니다
 
-    }
-
-    public String createToken(UserEntity user) {
-
-
-        String jwtToken = JWT.create()
-
-                .withSubject(user.getUserEmail())
-                .withExpiresAt(new Date(System.currentTimeMillis()+ JwtProperties.EXPIRATION_TIME))
-
-                .withClaim("id", user.getUserId())
-                .withClaim("nickname", user.getUserName())
-
-                .sign(Algorithm.HMAC512(JwtProperties.SECRET));
-
-        System.out.println(JwtProperties.SECRET);
-
-        return jwtToken;
     }
 
     public UserEntity getUser(HttpServletRequest request) {
