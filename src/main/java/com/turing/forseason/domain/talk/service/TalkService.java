@@ -152,7 +152,6 @@ public class TalkService {
         Pageable pageable = PageRequest.of(page, size);
 
         List<TalkEntity> talkEntityList = talkRepository.findAllByOrderByCreatedAtDesc(pageable);
-        Collections.reverse(talkEntityList);
         return talkEntityList;
     }
 

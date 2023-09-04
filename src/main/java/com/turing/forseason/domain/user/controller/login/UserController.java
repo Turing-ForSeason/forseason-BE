@@ -62,18 +62,12 @@ public class UserController {
     }
 
 
-    @GetMapping("/logout/kakao")
-    public ApplicationResponse<String> kakaoLogout(){
-        // 카카오 계정 로그아웃 (카카오 세션 끊기)
-        userService.kakaoLogout();
-        return ApplicationResponse.ok(ErrorCode.SUCCESS_OK, "로그아웃 되었습니다.");
-    }
-
     @GetMapping("/logout/service")
     public ApplicationResponse<String> serviceLogout(@AuthenticationPrincipal PrincipalDetails principalDetails){
         // 서비스 로그아웃 (토큰 만료시키기)
+        System.out.println("서비스 로그아웃");
         userService.serviceLogout(principalDetails);
-        return ApplicationResponse.ok(ErrorCode.SUCCESS_OK, "로그아웃 되었습니다.");
+        return ApplicationResponse.ok(ErrorCode.SUCCESS_OK, "서비스 로그아웃 되었습니다.");
     }
 }
 

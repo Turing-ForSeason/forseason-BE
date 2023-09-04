@@ -82,7 +82,7 @@ public class BoardService {
                 .boardContents(contents)
                 .boardHashtags("#example")
                 .boardUserNickname(userRepository.findByUserId(userId).get().getUserNickname())
-                .boardUserProfilePicture(userRepository.findByUserId(userId).get().getUserNickname())
+                .boardUserProfilePicture(userRepository.findByUserId(userId).get().getThumbnail())
                 .user(userRepository.findByUserId(userId).get())
                 .boardLikeNum(0L)
                 .build();

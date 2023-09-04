@@ -18,6 +18,7 @@ import com.turing.forseason.global.jwt.JwtTokenProvider;
 import com.turing.forseason.global.jwt.OauthToken;
 import com.turing.forseason.global.jwt.PrincipalDetails;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -39,6 +40,10 @@ public class UserService {
 
     private final UserRepository userRepository;
     private final JwtTokenProvider tokenProvider;
+    @Value("${spring.security.oauth2.client.registration.kakao.client-secret}")
+    private String clientSecret;
+    @Value("${spring.security.oauth2.client.registration.kakao.client-id}")
+    private String clientId;
 
     public UserEntity getUserById(Long userId) {
 
@@ -69,10 +74,10 @@ public class UserService {
 
         MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
         params.add("grant_type", "authorization_code");
-        params.add("client_id", "262778662e9437ec42d6cc9d231e88bc");
+        params.add("client_id", clientId);
         params.add("redirect_uri", "http://localhost:3000/api/login/oauth2/code/kakao");
         params.add("code", code);
-        params.add("client_secret", "vhJNa6nXjI0QFOAxpH2CkTtiOpd42LRb");
+        params.add("client_secret", clientSecret);
 
         HttpEntity<MultiValueMap<String, String>> kakaoTokenRequest =
                 new HttpEntity<>(params, headers);
@@ -162,6 +167,7 @@ public class UserService {
 
             userRepository.save(user);
         }
+        addOauthToken(oauthToken, user.getUserId());
 
         return tokenProvider.generateToken(user); // 리턴값 고쳤습니다
 
@@ -188,8 +194,8 @@ public class UserService {
         RestTemplate rt = new RestTemplate();
 
         UriComponentsBuilder builder = UriComponentsBuilder.fromUriString("https://kauth.kakao.com/oauth/logout")
-                .queryParam("client_id", "262778662e9437ec42d6cc9d231e88bc")
-                .queryParam("logout_redirect_uri", "http://localhost:8080/logout/service");
+                .queryParam("client_id", clientId)
+                .queryParam("logout_redirect_uri", "http://localhost:3000/logout/service");
         String uri = builder.toUriString();
         try {
             ResponseEntity<String> response = rt.exchange(
@@ -292,9 +298,9 @@ public class UserService {
 
         MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
         params.add("grant_type", "refresh_token");
-        params.add("client_id", "262778662e9437ec42d6cc9d231e88bc");
+        params.add("client_id", clientId);
         params.add("refresh_token", oauthToken.getRefresh_token());
-        params.add("client_secret", "vhJNa6nXjI0QFOAxpH2CkTtiOpd42LRb");
+        params.add("client_secret", clientSecret);
 
         HttpEntity<MultiValueMap<String, String>> refreshRequest = new HttpEntity<>(params, headers);
 
