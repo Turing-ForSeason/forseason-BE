@@ -43,7 +43,8 @@ public class JwtRequestFilter extends OncePerRequestFilter {
             if (StringUtils.hasText(jwt) && tokenProvider.validateToken(jwt)) {
                 Authentication authentication = tokenProvider.getAuthentication(jwt);
                 SecurityContextHolder.getContext().setAuthentication(authentication);
-            }
+            } else request.setAttribute("exception", ErrorCode.JWT_ABSENCE_TOKEN);
+
         } catch (CustomException e) {
             request.setAttribute("exception", e.getErrorCode());
         }
