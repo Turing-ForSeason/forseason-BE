@@ -44,8 +44,12 @@ public enum ErrorCode {
     TALK_DUPLICATED_USER(HttpStatus.NOT_ACCEPTABLE, "중복된 사용자입니다.", 6004),
 
 
-    // 원인 불명 에러(7000번대 코드 사용)
-    UNKNOWN_ERROR(HttpStatus.BAD_GATEWAY, "알 수 없는 오류입니다",7001),
+    // Redis 관련 에러
+    REDIS_NOT_FOUND(HttpStatus.NOT_FOUND, "데이터를 찾을 수 없습니다.", 7001),
+
+
+    // 원인 불명 에러(8000번대 코드 사용)
+    UNKNOWN_ERROR(HttpStatus.BAD_GATEWAY, "알 수 없는 오류입니다",8001),
     ;
 
 

@@ -1,11 +1,9 @@
 package com.turing.forseason.domain.user.service;
 
-import com.auth0.jwt.JWT;
-import com.auth0.jwt.algorithms.Algorithm;
+
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.turing.forseason.domain.user.domain.KakaoProfile;
-import com.turing.forseason.domain.user.domain.OauthTokenMap;
 import com.turing.forseason.domain.user.dto.OauthTokenInfoRes;
 import com.turing.forseason.domain.user.dto.UpdateUserInfoRequest;
 import com.turing.forseason.domain.user.entity.Role;
@@ -17,6 +15,7 @@ import com.turing.forseason.global.errorException.ErrorCode;
 import com.turing.forseason.global.jwt.JwtTokenProvider;
 import com.turing.forseason.global.jwt.OauthToken;
 import com.turing.forseason.global.jwt.PrincipalDetails;
+import com.turing.forseason.global.redis.RedisService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
@@ -29,9 +28,8 @@ import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import javax.servlet.http.HttpServletRequest;
-import java.util.Date;
-import java.util.HashMap;
 import java.util.NoSuchElementException;
+import java.util.concurrent.TimeUnit;
 
 @RequiredArgsConstructor
 @Service
@@ -40,6 +38,7 @@ public class UserService {
 
     private final UserRepository userRepository;
     private final JwtTokenProvider tokenProvider;
+    private final RedisService redisService;
     @Value("${spring.security.oauth2.client.registration.kakao.client-secret}")
     private String clientSecret;
     @Value("${spring.security.oauth2.client.registration.kakao.client-id}")
@@ -167,7 +166,7 @@ public class UserService {
 
             userRepository.save(user);
         }
-        addOauthToken(oauthToken, user.getUserId());
+        redisService.setValueWithTTL(user.getUserId().toString(), oauthToken, 1L, TimeUnit.HOURS);
 
         return tokenProvider.generateToken(user); // 리턴값 고쳤습니다
 
@@ -213,7 +212,7 @@ public class UserService {
 
     public void serviceLogout(PrincipalDetails principalDetails){
         // 서비스 로그아웃
-        OauthToken oauthToken = OauthTokenMap.getInstance().getOauthTokens().get(principalDetails.getUser().getUserId());
+        OauthToken oauthToken = (OauthToken) redisService.getValue(principalDetails.getUser().getUserId().toString());
         System.out.println(oauthToken);
 
         RestTemplate rt = new RestTemplate();
@@ -231,33 +230,12 @@ public class UserService {
             );
 
             System.out.println("회원번호 " + response.getBody() + " 로그아웃");
-            deleteOauthToken(principalDetails.getUser().getUserId());
+            redisService.deleteValue(principalDetails.getUser().getUserId().toString());
 
         } catch (Exception e) {
             throw new CustomException(ErrorCode.AUTH_EXPIRED_ACCESS_TOKEN); // 로그아웃 추가 해야함
         }
 
-    }
-
-    public OauthToken addOauthToken(OauthToken oauthToken, Long userId){
-        // OauthTokenMap에 OauthToken 저장
-        HashMap<Long, OauthToken> oauthTokens = OauthTokenMap.getInstance().getOauthTokens();
-        if(!oauthTokens.containsKey(userId)) {
-            oauthTokens.put(userId, oauthToken);
-        }
-        return oauthToken;
-    }
-
-    public void deleteOauthToken(Long userId) {
-        // OauthTokenMap에서 삭제
-        OauthTokenMap.getInstance().getOauthTokens().remove(userId);
-    }
-
-    public OauthToken updateOauthToken(Long userId, OauthToken newOauthToken) {
-        // OauthTokenMap에서 업데이트 (refresh할때 사용)
-        deleteOauthToken(userId);
-        addOauthToken(newOauthToken, userId);
-        return newOauthToken;
     }
 
     public boolean isExpired(OauthToken oauthToken) {
