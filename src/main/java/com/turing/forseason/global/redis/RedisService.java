@@ -17,11 +17,13 @@ public class RedisService {
     private final StringRedisTemplate stringRedisTemplate;
 
     public void setValueWithTTL(String key, Object value, long timeout, TimeUnit unit) {
+        // <key,value>를 TTL 둬서 redis에 저장
         ValueOperations<String, Object> valueOperations = redisTemplate.opsForValue();
         valueOperations.set(key, value, timeout, unit);
     }
 
     public Object getValue(String key) {
+        // key값으로 value 가져오기
         ValueOperations<String, Object> valueOperations = redisTemplate.opsForValue();
         Object object = valueOperations.get(key);
 
@@ -31,6 +33,7 @@ public class RedisService {
     }
 
     public void deleteValue(String key) {
+        // key값으로 value 삭제하기
         ValueOperations<String, Object> valueOperations = redisTemplate.opsForValue();
         valueOperations.getAndDelete(key);
     }
