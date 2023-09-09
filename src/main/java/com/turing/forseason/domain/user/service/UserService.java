@@ -27,6 +27,7 @@ import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import javax.mail.MessagingException;
 import javax.servlet.http.HttpServletRequest;
 import java.util.NoSuchElementException;
 import java.util.concurrent.TimeUnit;
@@ -103,7 +104,17 @@ public class UserService {
         String authCode = mailService.generateCode();
         System.out.println(authCode);
 
-        mailService.sendEmail(email, "[Forseason] 이메일 인증 코드", authCode);
+        String body = "";
+        body += "<h3>" + "Forseason 이메일 인증 코드입니다." + "</h3>";
+        body += "<h1>" + authCode + "</h1>";
+        body += "<h3>" + "인증 코드는 30분간 유효합니다." + "</h3>";
+
+        try {
+            mailService.sendEmail(email, "[Forseason] 이메일 인증 코드", body);
+        } catch (Throwable e) {
+            throw new CustomException(ErrorCode.UNKNOWN_ERROR);
+        }
+
         redisService.setValueWithTTL(email, authCode, 30, TimeUnit.MINUTES);
     }
 
