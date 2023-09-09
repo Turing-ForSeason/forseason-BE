@@ -29,6 +29,9 @@ public class UserEntity extends BaseTimeEntity {
     @Column(name = "user_email", unique = true, nullable = false)
     private String userEmail;
 
+    @Column(name = "user_password")
+    private String userPassword;
+
     @Column(name = "user_nickname", nullable = false)
     private String userNickname;
 
@@ -47,13 +50,15 @@ public class UserEntity extends BaseTimeEntity {
     @Column(name = "thumbnail_url", columnDefinition = "TEXT")
     private String thumbnail;
 
-    @Column(nullable = false, unique = true)
-    private String nickname;
-
 
     @Column(nullable = false, name = "my_role", updatable = false)
     @Enumerated(EnumType.STRING)
     private Role myRole;
+
+    @Column(nullable = false, name = "login_type", updatable = false)
+    @Enumerated(EnumType.STRING)
+    private LoginType loginType;
+
 
     public List<String> getRoleList(){
         if(this.myRole.getValue().length() > 0){
@@ -61,26 +66,27 @@ public class UserEntity extends BaseTimeEntity {
         }
         return new ArrayList<>();
     }
+
     @Builder
-    public UserEntity(Long userId, String userName, String userEmail, String userNickname, Long userBoardNum, Long userCommentNum, Long kakao_id, String image, String thumbnail, String nickname, Role myRole) {
+    public UserEntity(Long userId, String userName, String userEmail, String userPassword, String userNickname, Long userBoardNum, Long userCommentNum, Long kakao_id, String image, String thumbnail, Role myRole, LoginType loginType) {
         this.userId = userId;
         this.userName = userName;
         this.userEmail = userEmail;
+        this.userPassword = userPassword;
         this.userNickname = userNickname;
         this.userBoardNum = userBoardNum;
         this.userCommentNum = userCommentNum;
         this.kakao_id = kakao_id;
         this.image = image;
         this.thumbnail = thumbnail;
-        this.nickname = nickname;
         this.myRole = myRole;
+        this.loginType = loginType;
     }
 
-    public void update(String userName, String userNickname, String nickname) {
+    public void update(String userName, String userNickname) {
         //사용자 정보 변경
         this.userName = userName;
         this.userNickname = userNickname;
-        this.nickname = nickname;
 
     }
 

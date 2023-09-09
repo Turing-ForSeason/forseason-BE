@@ -2,6 +2,8 @@ package com.turing.forseason.domain.user.controller.login;
 
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.interfaces.DecodedJWT;
+import com.turing.forseason.domain.user.dto.SignInRequestDto;
+import com.turing.forseason.domain.user.dto.SignUpRequestDto;
 import com.turing.forseason.domain.user.dto.UserDetailDto;
 import com.turing.forseason.domain.user.entity.UserEntity;
 import com.turing.forseason.domain.user.service.UserService;
@@ -15,6 +17,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
+
 @CrossOrigin(origins = "*")
 @RestController
 public class UserController {
@@ -47,7 +50,8 @@ public class UserController {
         // Authorization 헤더에서 토큰 값을 가져옵니다.
         String authHeader = request.getHeader("Authorization");
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
-            return "{ \"error\": \"Bearer token missing\" }";        }
+            return "{ \"error\": \"Bearer token missing\" }";
+        }
         String token = authHeader.substring(7);
         try {
             DecodedJWT decodedJWT = JWT.decode(token);
@@ -63,11 +67,31 @@ public class UserController {
 
 
     @GetMapping("/logout/service")
-    public ApplicationResponse<String> serviceLogout(@AuthenticationPrincipal PrincipalDetails principalDetails){
+    public ApplicationResponse<String> serviceLogout(@AuthenticationPrincipal PrincipalDetails principalDetails) {
         // 서비스 로그아웃 (토큰 만료시키기)
         System.out.println("서비스 로그아웃");
         userService.serviceLogout(principalDetails);
         return ApplicationResponse.ok(ErrorCode.SUCCESS_OK, "서비스 로그아웃 되었습니다.");
+    }
+
+
+    // 여기서부터는 일반로그인
+    @PostMapping("/signup/general")
+    public ApplicationResponse<String> generalSignUp(@RequestBody SignUpRequestDto requestDto) {
+        // 코드 리팩토링 필수(URI 설정, 비밀번호 암호화 등)
+        // 검증 메일 로직 추가 예정.
+        System.out.println("일반 회원가입");
+        userService.signUpUser(requestDto);
+        return ApplicationResponse.ok(ErrorCode.SUCCESS_CREATED, "회원가입 성공");
+    }
+
+    @PostMapping("/signin/general")
+    public ApplicationResponse<String> generalSignIn(@RequestBody SignInRequestDto requestDto) {
+        System.out.println("일반 로그인");
+        String jwtToken = userService.signInAndGetToken(requestDto);
+        System.out.println(jwtToken);
+
+        return ApplicationResponse.ok(ErrorCode.SUCCESS_OK, JwtTokenProvider.TOKEN_PREFIX + jwtToken);
     }
 }
 

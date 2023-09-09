@@ -4,10 +4,9 @@ package com.turing.forseason.domain.user.service;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.turing.forseason.domain.user.domain.KakaoProfile;
-import com.turing.forseason.domain.user.dto.OauthTokenInfoRes;
-import com.turing.forseason.domain.user.dto.UpdateUserInfoRequest;
+import com.turing.forseason.domain.user.dto.*;
+import com.turing.forseason.domain.user.entity.LoginType;
 import com.turing.forseason.domain.user.entity.Role;
-import com.turing.forseason.domain.user.dto.UserDetailDto;
 import com.turing.forseason.domain.user.entity.UserEntity;
 import com.turing.forseason.domain.user.repository.UserRepository;
 import com.turing.forseason.global.errorException.CustomException;
@@ -60,10 +59,47 @@ public class UserService {
                 () -> new CustomException(ErrorCode.AUTH_USER_NOT_FOUND)
         );
 
-        user.update(request.getUserName(), request.getUserNickname(), request.getNickname());
+        user.update(request.getUserName(), request.getUserNickname());
 
         return user;
     }
+
+    public void signUpUser(SignUpRequestDto requestDto) {
+        validateEmail(requestDto.getUserEmail());
+
+        UserEntity user = UserEntity.builder()
+                .userBoardNum(0L)
+                .userCommentNum(0L)
+                .userEmail(requestDto.getUserEmail())
+                .userPassword(requestDto.getUserPassword())
+                .userNickname(requestDto.getUserNickname())
+                .userName(requestDto.getUserName())
+                .image(requestDto.getImage())
+                .thumbnail(requestDto.getImage())
+                .kakao_id(null)
+                .myRole(Role.MEMBER)
+                .loginType(LoginType.GENERAL)
+                .build();
+
+        userRepository.save(user);
+    }
+
+    public void validateEmail(String userEmail) {
+        if(userRepository.existsByUserEmail(userEmail)) throw new CustomException(ErrorCode.USER_DUPLICATED_USER_EMAIL);
+    }
+
+
+    public String signInAndGetToken(SignInRequestDto requestDto) {
+        // Email, PW 검증 후 JWT 토큰 발급
+        UserEntity user = userRepository.findByUserEmail(requestDto.getUserEmail()).orElseThrow(
+                () -> new CustomException(ErrorCode.USER_INVALID_EMAIL));
+
+        if(!user.getUserPassword().equals(requestDto.getUserPassword()))
+            throw new CustomException(ErrorCode.USER_INVALID_PASSWORD);
+
+        return tokenProvider.generateToken(user);
+    }
+
 
     public OauthToken getKakaoAccessToken (String code) {
         RestTemplate rt = new RestTemplate();
@@ -147,18 +183,19 @@ public class UserService {
         } catch (NoSuchElementException e) {
 
             String userName = "이름넣어줄건가요";
-            Long userBoardNum = 1L;
-            Long userCommentNum = 1L;
+            Long userBoardNum = 0L;
+            Long userCommentNum = 0L;
 
 
             user = UserEntity.builder()
                     .kakao_id(profile.getId())
                     .image(profile.getKakao_account().getProfile().getProfile_image_url())
                     .thumbnail(profile.getKakao_account().getProfile().getThumbnail_image_url())
-                    .nickname(profile.getKakao_account().getProfile().getNickname())
                     .userNickname(profile.getKakao_account().getProfile().getNickname())
                     .userEmail(profile.getKakao_account().getEmail())
+                    .userPassword(null)
                     .myRole(Role.MEMBER)
+                    .loginType(LoginType.KAKAO)
                     .userName(userName)
                     .userBoardNum(userBoardNum)
                     .userCommentNum(userCommentNum)
@@ -168,7 +205,7 @@ public class UserService {
         }
         redisService.setValueWithTTL(user.getUserId().toString(), oauthToken, 1L, TimeUnit.HOURS);
 
-        return tokenProvider.generateToken(user); // 리턴값 고쳤습니다
+        return tokenProvider.generateToken(user);
 
     }
 
@@ -188,30 +225,13 @@ public class UserService {
         return new UserDetailDto(user);
     }
 
-    public void kakaoLogout(){
-        // 카카오계정 로그아웃
-        RestTemplate rt = new RestTemplate();
-
-        UriComponentsBuilder builder = UriComponentsBuilder.fromUriString("https://kauth.kakao.com/oauth/logout")
-                .queryParam("client_id", clientId)
-                .queryParam("logout_redirect_uri", "http://localhost:3000/logout/service");
-        String uri = builder.toUriString();
-        try {
-            ResponseEntity<String> response = rt.exchange(
-                    uri,
-                    HttpMethod.GET,
-                    null,
-                    String.class
-            );
-        }catch(HttpClientErrorException ex){
-            System.out.println("카카오 로그아웃 실패");
-            System.out.println(ex.getResponseBodyAsString());
-            throw new CustomException(ErrorCode.AUTH_BAD_LOGOUT_REQUEST);
-        }
-    }
 
     public void serviceLogout(PrincipalDetails principalDetails){
-        // 서비스 로그아웃
+        // 서비스 로그아웃(카카오)
+
+        if(principalDetails.getUser().getLoginType()!=LoginType.KAKAO)
+            throw new CustomException(ErrorCode.USER_INVALID_LOGIN_TYPE);
+
         OauthToken oauthToken = (OauthToken) redisService.getValue(principalDetails.getUser().getUserId().toString());
         System.out.println(oauthToken);
 
