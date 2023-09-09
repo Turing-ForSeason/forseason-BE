@@ -14,6 +14,7 @@ import com.turing.forseason.global.errorException.ErrorCode;
 import com.turing.forseason.global.jwt.JwtTokenProvider;
 import com.turing.forseason.global.jwt.OauthToken;
 import com.turing.forseason.global.jwt.PrincipalDetails;
+import com.turing.forseason.global.mail.MailService;
 import com.turing.forseason.global.redis.RedisService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
@@ -38,6 +39,7 @@ public class UserService {
     private final UserRepository userRepository;
     private final JwtTokenProvider tokenProvider;
     private final RedisService redisService;
+    private final MailService mailService;
     @Value("${spring.security.oauth2.client.registration.kakao.client-secret}")
     private String clientSecret;
     @Value("${spring.security.oauth2.client.registration.kakao.client-id}")
@@ -65,7 +67,6 @@ public class UserService {
     }
 
     public void signUpUser(SignUpRequestDto requestDto) {
-        validateEmail(requestDto.getUserEmail());
 
         UserEntity user = UserEntity.builder()
                 .userBoardNum(0L)
@@ -84,8 +85,26 @@ public class UserService {
         userRepository.save(user);
     }
 
-    public void validateEmail(String userEmail) {
-        if(userRepository.existsByUserEmail(userEmail)) throw new CustomException(ErrorCode.USER_DUPLICATED_USER_EMAIL);
+    public void validateEmail(EmailVerificationDto emailVerificationDto) {
+        // 인증 코드 검사
+        String authCode = (String) redisService.getValue(emailVerificationDto.getUserEmail());
+
+        if(!emailVerificationDto.getCode().equals(authCode))
+            throw new CustomException(ErrorCode.USER_INVALID_EMAIL_AUTH_CODE);
+
+        redisService.deleteValue(emailVerificationDto.getUserEmail());
+    }
+
+    public void sendEmailAuthCode(String email) {
+        // 이메일 인증 코드 전송하기
+        if(userRepository.existsByUserEmail(email)) throw new CustomException(ErrorCode.USER_DUPLICATED_USER_EMAIL);
+        System.out.println(email);
+
+        String authCode = mailService.generateCode();
+        System.out.println(authCode);
+
+        mailService.sendEmail(email, "[Forseason] 이메일 인증 코드", authCode);
+        redisService.setValueWithTTL(email, authCode, 30, TimeUnit.MINUTES);
     }
 
 

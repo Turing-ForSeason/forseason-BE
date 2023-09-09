@@ -2,6 +2,7 @@ package com.turing.forseason.domain.user.controller.login;
 
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.interfaces.DecodedJWT;
+import com.turing.forseason.domain.user.dto.EmailVerificationDto;
 import com.turing.forseason.domain.user.dto.SignInRequestDto;
 import com.turing.forseason.domain.user.dto.SignUpRequestDto;
 import com.turing.forseason.domain.user.dto.UserDetailDto;
@@ -12,6 +13,7 @@ import com.turing.forseason.global.errorException.ErrorCode;
 import com.turing.forseason.global.jwt.JwtTokenProvider;
 import com.turing.forseason.global.jwt.OauthToken;
 import com.turing.forseason.global.jwt.PrincipalDetails;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
@@ -20,9 +22,9 @@ import javax.servlet.http.HttpServletRequest;
 
 @CrossOrigin(origins = "*")
 @RestController
+@RequiredArgsConstructor
 public class UserController {
-    @Autowired
-    private UserService userService;
+    private final UserService userService;
 
     @GetMapping("/api/login/oauth2/code/kakao")
     public ApplicationResponse<String> Login(@RequestParam("code") String code) {
@@ -76,6 +78,18 @@ public class UserController {
 
 
     // 여기서부터는 일반로그인
+    @GetMapping("/signup/verification/email")
+    public ApplicationResponse<String> getEmailAuthCode(@RequestParam(name = "email") String email) {
+        userService.sendEmailAuthCode(email);
+        return ApplicationResponse.ok(ErrorCode.SUCCESS_OK, "인증 코드가 전송되었습니다.");
+    }
+
+    @PostMapping("/signup/verification/email")
+    public ApplicationResponse<String> verifyEmail(@RequestBody EmailVerificationDto emailVerificationDto) {
+        userService.validateEmail(emailVerificationDto);
+        return ApplicationResponse.ok(ErrorCode.SUCCESS_OK, "인증에 성공하였습니다.");
+    }
+
     @PostMapping("/signup/general")
     public ApplicationResponse<String> generalSignUp(@RequestBody SignUpRequestDto requestDto) {
         // 코드 리팩토링 필수(URI 설정, 비밀번호 암호화 등)
