@@ -14,9 +14,7 @@ import org.springframework.web.multipart.MultipartFile;
 import com.cloudinary.Cloudinary;
 
 import java.io.IOException;
-import java.util.Collections;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 
 @RestController
 @RequestMapping("/community/coordi")
@@ -25,12 +23,18 @@ public class BoardCoordiUploadController {
 
     // BoardService 인스턴스 주입
     private final BoardService boardService;
-    // Cloudinary 인스턴스 주입
     @Autowired
     private Cloudinary cloudinary;
 
-    /* 게시판 업로드 기능 구현 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ */
-    // 수정 중
+    @PostMapping("/upload/image")
+    @PreAuthorize("hasRole('USER')")
+    public ResponseEntity<String> uploadImage(@RequestParam("image") MultipartFile image) throws IOException {
+        // Cloudinary에 업로드한 이미지 URL 가져오기
+        String imageUrl = getImageUrlFromCloudinary(image.getBytes());
+        // 이미지 업로드 성공 응답
+        return ResponseEntity.ok(imageUrl);
+    }
+
     @PostMapping("/upload/board")
     @PreAuthorize("hasRole('USER')")
     public ResponseEntity<String> uploadBoard(@RequestPart BoardUploadRequest request,
@@ -38,19 +42,33 @@ public class BoardCoordiUploadController {
         UserEntity user = principalDetails.getUser();
         BoardEntity boardEntity = request.toBoardEntity();
         boardEntity.setUser(user);
-        // Cloudinary에 업로드한 이미지 URL 가져오기
-        String imageUrl = getImageUrlFromCloudinary(request.getBoardPicture().getBytes());
-        boardEntity.setBoardPicture(imageUrl);
+
+        // 이미지 업로드를 직접 처리
+        if (request.getBoardPicture() != null) {
+            String imageUrl = getImageUrlFromCloudinary(request.getBoardPicture().getBytes());
+            boardEntity.setBoardPicture(imageUrl); // 이미지 URL을 게시글 엔티티에 저장
+        }
+
         boardService.uploadCoordiBoard(boardEntity);
+
         // 업로드 성공 응답
         return ResponseEntity.ok("Board uploaded successfully");
     }
 
-    /* cloudinary에 업로드한 이미지 url 반환 메서드 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ */
-    // 수정 중
+    // 여러 이미지 업로드 및 URL 배열 반환 메서드
+// 여러 이미지 업로드 및 URL 리스트 반환 메서드
+    private List<String> getImageUrlsFromCloudinary(MultipartFile[] imageFiles) throws IOException {
+        List<String> imageUrls = new ArrayList<>();
+        for (MultipartFile imageFile : imageFiles) {
+            byte[] imageBytes = imageFile.getBytes();
+            String imageUrl = getImageUrlFromCloudinary(imageBytes);
+            imageUrls.add(imageUrl);
+        }
+        return imageUrls;
+    }
+
     private String getImageUrlFromCloudinary(byte[] imageBytes) throws IOException {
         // cloudinary 이미지 업로드 파라미터 설정
-        // UUID 랜덤 값 사용
         Map<String, Object> params = Collections.singletonMap("public_id", UUID.randomUUID().toString());
         // 이미지 byte 코드와 생성한 UUID 업로드
         Map<String, String> uploadResult = cloudinary.uploader().upload(imageBytes, params);
