@@ -86,14 +86,13 @@ public class UserController {
 
     @PostMapping("/signup/verification/email")
     public ApplicationResponse<String> verifyEmail(@RequestBody EmailVerificationDto emailVerificationDto) {
-        userService.validateEmail(emailVerificationDto);
+        userService.verifyEmail(emailVerificationDto);
         return ApplicationResponse.ok(ErrorCode.SUCCESS_OK, "인증에 성공하였습니다.");
     }
 
     @PostMapping("/signup/general")
     public ApplicationResponse<String> generalSignUp(@RequestBody SignUpRequestDto requestDto) {
         // 코드 리팩토링 필수(URI 설정, 비밀번호 암호화 등)
-        // 검증 메일 로직 추가 예정.
         System.out.println("일반 회원가입");
         userService.signUpUser(requestDto);
         return ApplicationResponse.ok(ErrorCode.SUCCESS_CREATED, "회원가입 성공");

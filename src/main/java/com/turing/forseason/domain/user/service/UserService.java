@@ -68,6 +68,8 @@ public class UserService {
     }
 
     public void signUpUser(SignUpRequestDto requestDto) {
+        String state = (String) redisService.getValue(requestDto.getUserEmail());
+        if(!state.equals("verified")) throw new CustomException(ErrorCode.USER_INVALID_EMAIL);
 
         UserEntity user = UserEntity.builder()
                 .userBoardNum(0L)
@@ -86,14 +88,14 @@ public class UserService {
         userRepository.save(user);
     }
 
-    public void validateEmail(EmailVerificationDto emailVerificationDto) {
+    public void verifyEmail(EmailVerificationDto emailVerificationDto) {
         // 인증 코드 검사
         String authCode = (String) redisService.getValue(emailVerificationDto.getUserEmail());
 
         if(!emailVerificationDto.getCode().equals(authCode))
             throw new CustomException(ErrorCode.USER_INVALID_EMAIL_AUTH_CODE);
 
-        redisService.deleteValue(emailVerificationDto.getUserEmail());
+        redisService.setValueWithTTL(emailVerificationDto.getUserEmail(), "verified", 30, TimeUnit.MINUTES);
     }
 
     public void sendEmailAuthCode(String email) {

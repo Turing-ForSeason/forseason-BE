@@ -18,7 +18,7 @@ import java.util.Random;
 @RequiredArgsConstructor
 public class MailService {
     private final JavaMailSender emailSender;
-    private final String alphaNumeric = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+    private final String alphaNumeric = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
     private final int codeLength = 6;
 
     public void sendEmail(String address, String title, String text) throws Throwable {
