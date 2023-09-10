@@ -34,7 +34,7 @@ public class RedisConfig {
         // Key는 String으로 (역)직렬화하도록 설정
         redisTemplate.setKeySerializer(new StringRedisSerializer());
 
-        // Java 객체를 JSON 형식으로 직렬화, 역렬화하는 Serializer
+        // Java 객체를 JSON 형식으로 직렬화, 역직렬화하는 Serializer
         Jackson2JsonRedisSerializer<Object> jackson2JsonRedisSerializer = new Jackson2JsonRedisSerializer<>(Object.class);
 
         ObjectMapper om = new ObjectMapper();

@@ -1,15 +1,11 @@
 package com.turing.forseason.global.mail;
 
-import com.turing.forseason.global.errorException.CustomException;
-import com.turing.forseason.global.errorException.ErrorCode;
 import lombok.RequiredArgsConstructor;
-import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import javax.mail.MessagingException;
 import javax.mail.internet.MimeMessage;
 import java.util.Random;
 

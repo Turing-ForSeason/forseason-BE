@@ -37,6 +37,7 @@ public enum ErrorCode {
     USER_INVALID_EMAIL(HttpStatus.BAD_REQUEST, "이메일을 다시 확인해주세요.", 4003),
     USER_INVALID_PASSWORD(HttpStatus.BAD_REQUEST, "비밀번호를 다시 확인해주세요", 4004),
     USER_INVALID_EMAIL_AUTH_CODE(HttpStatus.BAD_REQUEST, "유효하지 않는 인증 코드입니다.", 4005),
+    USER_EMAIL_AUTHENTICATION_STATUS_EXPIRED(HttpStatus.NOT_FOUND, "이메일 인증을 다시 해주세요.", 4006),
 
     // comment 관련(5000번대 코드 사용)
 

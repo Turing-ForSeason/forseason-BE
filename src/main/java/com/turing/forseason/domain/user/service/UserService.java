@@ -69,7 +69,7 @@ public class UserService {
 
     public void signUpUser(SignUpRequestDto requestDto) {
         String state = (String) redisService.getValue(requestDto.getUserEmail());
-        if(!state.equals("verified")) throw new CustomException(ErrorCode.USER_INVALID_EMAIL);
+        if(!state.equals("verified")) throw new CustomException(ErrorCode.USER_EMAIL_AUTHENTICATION_STATUS_EXPIRED);
 
         UserEntity user = UserEntity.builder()
                 .userBoardNum(0L)
