@@ -80,7 +80,8 @@ public class UserController {
     // 여기서부터는 일반로그인
     @GetMapping("/signup/verification/email")
     public ApplicationResponse<String> getEmailAuthCode(@RequestParam(name = "email") String email) {
-        userService.sendEmailAuthCode(email);
+        if(userService.isDuplicatedEmail(email))
+            userService.sendEmailAuthCode(email);
         return ApplicationResponse.ok(ErrorCode.SUCCESS_OK, "인증 코드가 전송되었습니다.");
     }
 

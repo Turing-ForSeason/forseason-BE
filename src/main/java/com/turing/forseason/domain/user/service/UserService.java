@@ -19,6 +19,7 @@ import com.turing.forseason.global.redis.RedisService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.LinkedMultiValueMap;
@@ -98,10 +99,17 @@ public class UserService {
         redisService.setValueWithTTL(emailVerificationDto.getUserEmail(), "verified", 30, TimeUnit.MINUTES);
     }
 
+    public boolean isDuplicatedEmail(String email) {
+        // 이메일 중복 검사 메서드
+        if(userRepository.existsByUserEmail(email))
+            throw new CustomException(ErrorCode.USER_DUPLICATED_USER_EMAIL);
+        return true;
+    }
+    @Async
     public void sendEmailAuthCode(String email) {
+        // 해당 메서드는 메일 전송후, 잘 전송됐는지 검사까지 하므로 매우 처리시간이 김.
+        // 따라서 스레드 비동기 처리로 서버 처리 속도를 향상시킴.
         // 이메일 인증 코드 전송하기
-        if(userRepository.existsByUserEmail(email)) throw new CustomException(ErrorCode.USER_DUPLICATED_USER_EMAIL);
-        System.out.println(email);
 
         String authCode = mailService.generateCode();
         System.out.println(authCode);
