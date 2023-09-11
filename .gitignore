@@ -28,6 +28,7 @@ out/
 
 application.properties
 application-oauth2.properties
+docker-compose.yml
 
 
 ### NetBeans ###

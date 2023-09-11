@@ -1,15 +1,12 @@
 package com.turing.forseason.domain.user.service;
 
-import com.auth0.jwt.JWT;
-import com.auth0.jwt.algorithms.Algorithm;
+
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.turing.forseason.domain.user.domain.KakaoProfile;
-import com.turing.forseason.domain.user.domain.OauthTokenMap;
-import com.turing.forseason.domain.user.dto.OauthTokenInfoRes;
-import com.turing.forseason.domain.user.dto.UpdateUserInfoRequest;
+import com.turing.forseason.domain.user.dto.*;
+import com.turing.forseason.domain.user.entity.LoginType;
 import com.turing.forseason.domain.user.entity.Role;
-import com.turing.forseason.domain.user.dto.UserDetailDto;
 import com.turing.forseason.domain.user.entity.UserEntity;
 import com.turing.forseason.domain.user.repository.UserRepository;
 import com.turing.forseason.global.errorException.CustomException;
@@ -17,6 +14,8 @@ import com.turing.forseason.global.errorException.ErrorCode;
 import com.turing.forseason.global.jwt.JwtTokenProvider;
 import com.turing.forseason.global.jwt.OauthToken;
 import com.turing.forseason.global.jwt.PrincipalDetails;
+import com.turing.forseason.global.mail.MailService;
+import com.turing.forseason.global.redis.RedisService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
@@ -28,10 +27,10 @@ import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import javax.mail.MessagingException;
 import javax.servlet.http.HttpServletRequest;
-import java.util.Date;
-import java.util.HashMap;
 import java.util.NoSuchElementException;
+import java.util.concurrent.TimeUnit;
 
 @RequiredArgsConstructor
 @Service
@@ -40,6 +39,8 @@ public class UserService {
 
     private final UserRepository userRepository;
     private final JwtTokenProvider tokenProvider;
+    private final RedisService redisService;
+    private final MailService mailService;
     @Value("${spring.security.oauth2.client.registration.kakao.client-secret}")
     private String clientSecret;
     @Value("${spring.security.oauth2.client.registration.kakao.client-id}")
@@ -61,10 +62,76 @@ public class UserService {
                 () -> new CustomException(ErrorCode.AUTH_USER_NOT_FOUND)
         );
 
-        user.update(request.getUserName(), request.getUserNickname(), request.getNickname());
+        user.update(request.getUserName(), request.getUserNickname());
 
         return user;
     }
+
+    public void signUpUser(SignUpRequestDto requestDto) {
+        String state = (String) redisService.getValue(requestDto.getUserEmail());
+        if(!state.equals("verified")) throw new CustomException(ErrorCode.USER_EMAIL_AUTHENTICATION_STATUS_EXPIRED);
+
+        UserEntity user = UserEntity.builder()
+                .userBoardNum(0L)
+                .userCommentNum(0L)
+                .userEmail(requestDto.getUserEmail())
+                .userPassword(requestDto.getUserPassword())
+                .userNickname(requestDto.getUserNickname())
+                .userName(requestDto.getUserName())
+                .image(requestDto.getImage())
+                .thumbnail(requestDto.getImage())
+                .kakao_id(null)
+                .myRole(Role.MEMBER)
+                .loginType(LoginType.GENERAL)
+                .build();
+
+        userRepository.save(user);
+    }
+
+    public void verifyEmail(EmailVerificationDto emailVerificationDto) {
+        // 인증 코드 검사
+        String authCode = (String) redisService.getValue(emailVerificationDto.getUserEmail());
+
+        if(!emailVerificationDto.getCode().equals(authCode))
+            throw new CustomException(ErrorCode.USER_INVALID_EMAIL_AUTH_CODE);
+
+        redisService.setValueWithTTL(emailVerificationDto.getUserEmail(), "verified", 30, TimeUnit.MINUTES);
+    }
+
+    public void sendEmailAuthCode(String email) {
+        // 이메일 인증 코드 전송하기
+        if(userRepository.existsByUserEmail(email)) throw new CustomException(ErrorCode.USER_DUPLICATED_USER_EMAIL);
+        System.out.println(email);
+
+        String authCode = mailService.generateCode();
+        System.out.println(authCode);
+
+        String body = "";
+        body += "<h3>" + "Forseason 이메일 인증 코드입니다." + "</h3>";
+        body += "<h1>" + authCode + "</h1>";
+        body += "<h3>" + "인증 코드는 30분간 유효합니다." + "</h3>";
+
+        try {
+            mailService.sendEmail(email, "[Forseason] 이메일 인증 코드", body);
+        } catch (Throwable e) {
+            throw new CustomException(ErrorCode.UNKNOWN_ERROR);
+        }
+
+        redisService.setValueWithTTL(email, authCode, 30, TimeUnit.MINUTES);
+    }
+
+
+    public String signInAndGetToken(SignInRequestDto requestDto) {
+        // Email, PW 검증 후 JWT 토큰 발급
+        UserEntity user = userRepository.findByUserEmail(requestDto.getUserEmail()).orElseThrow(
+                () -> new CustomException(ErrorCode.USER_INVALID_EMAIL));
+
+        if(!user.getUserPassword().equals(requestDto.getUserPassword()))
+            throw new CustomException(ErrorCode.USER_INVALID_PASSWORD);
+
+        return tokenProvider.generateToken(user);
+    }
+
 
     public OauthToken getKakaoAccessToken (String code) {
         RestTemplate rt = new RestTemplate();
@@ -148,18 +215,19 @@ public class UserService {
         } catch (NoSuchElementException e) {
 
             String userName = "이름넣어줄건가요";
-            Long userBoardNum = 1L;
-            Long userCommentNum = 1L;
+            Long userBoardNum = 0L;
+            Long userCommentNum = 0L;
 
 
             user = UserEntity.builder()
                     .kakao_id(profile.getId())
                     .image(profile.getKakao_account().getProfile().getProfile_image_url())
                     .thumbnail(profile.getKakao_account().getProfile().getThumbnail_image_url())
-                    .nickname(profile.getKakao_account().getProfile().getNickname())
                     .userNickname(profile.getKakao_account().getProfile().getNickname())
                     .userEmail(profile.getKakao_account().getEmail())
+                    .userPassword(null)
                     .myRole(Role.MEMBER)
+                    .loginType(LoginType.KAKAO)
                     .userName(userName)
                     .userBoardNum(userBoardNum)
                     .userCommentNum(userCommentNum)
@@ -167,9 +235,9 @@ public class UserService {
 
             userRepository.save(user);
         }
-        addOauthToken(oauthToken, user.getUserId());
+        redisService.setValueWithTTL(user.getUserId().toString(), oauthToken, 1L, TimeUnit.HOURS);
 
-        return tokenProvider.generateToken(user); // 리턴값 고쳤습니다
+        return tokenProvider.generateToken(user);
 
     }
 
@@ -189,31 +257,14 @@ public class UserService {
         return new UserDetailDto(user);
     }
 
-    public void kakaoLogout(){
-        // 카카오계정 로그아웃
-        RestTemplate rt = new RestTemplate();
-
-        UriComponentsBuilder builder = UriComponentsBuilder.fromUriString("https://kauth.kakao.com/oauth/logout")
-                .queryParam("client_id", clientId)
-                .queryParam("logout_redirect_uri", "http://localhost:3000/logout/service");
-        String uri = builder.toUriString();
-        try {
-            ResponseEntity<String> response = rt.exchange(
-                    uri,
-                    HttpMethod.GET,
-                    null,
-                    String.class
-            );
-        }catch(HttpClientErrorException ex){
-            System.out.println("카카오 로그아웃 실패");
-            System.out.println(ex.getResponseBodyAsString());
-            throw new CustomException(ErrorCode.AUTH_BAD_LOGOUT_REQUEST);
-        }
-    }
 
     public void serviceLogout(PrincipalDetails principalDetails){
-        // 서비스 로그아웃
-        OauthToken oauthToken = OauthTokenMap.getInstance().getOauthTokens().get(principalDetails.getUser().getUserId());
+        // 서비스 로그아웃(카카오)
+
+        if(principalDetails.getUser().getLoginType()!=LoginType.KAKAO)
+            throw new CustomException(ErrorCode.USER_INVALID_LOGIN_TYPE);
+
+        OauthToken oauthToken = (OauthToken) redisService.getValue(principalDetails.getUser().getUserId().toString());
         System.out.println(oauthToken);
 
         RestTemplate rt = new RestTemplate();
@@ -231,33 +282,12 @@ public class UserService {
             );
 
             System.out.println("회원번호 " + response.getBody() + " 로그아웃");
-            deleteOauthToken(principalDetails.getUser().getUserId());
+            redisService.deleteValue(principalDetails.getUser().getUserId().toString());
 
         } catch (Exception e) {
             throw new CustomException(ErrorCode.AUTH_EXPIRED_ACCESS_TOKEN); // 로그아웃 추가 해야함
         }
 
-    }
-
-    public OauthToken addOauthToken(OauthToken oauthToken, Long userId){
-        // OauthTokenMap에 OauthToken 저장
-        HashMap<Long, OauthToken> oauthTokens = OauthTokenMap.getInstance().getOauthTokens();
-        if(!oauthTokens.containsKey(userId)) {
-            oauthTokens.put(userId, oauthToken);
-        }
-        return oauthToken;
-    }
-
-    public void deleteOauthToken(Long userId) {
-        // OauthTokenMap에서 삭제
-        OauthTokenMap.getInstance().getOauthTokens().remove(userId);
-    }
-
-    public OauthToken updateOauthToken(Long userId, OauthToken newOauthToken) {
-        // OauthTokenMap에서 업데이트 (refresh할때 사용)
-        deleteOauthToken(userId);
-        addOauthToken(newOauthToken, userId);
-        return newOauthToken;
     }
 
     public boolean isExpired(OauthToken oauthToken) {

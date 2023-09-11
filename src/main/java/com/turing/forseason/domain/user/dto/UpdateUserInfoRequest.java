@@ -11,6 +11,5 @@ public class UpdateUserInfoRequest {
 
     private String userName;
     private String userNickname;
-    private String nickname;
 
 }

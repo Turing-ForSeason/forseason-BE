@@ -32,7 +32,12 @@ public enum ErrorCode {
 
 
     // User 관련(4000번대 코드 사용)
-
+    USER_INVALID_LOGIN_TYPE(HttpStatus.BAD_REQUEST, "잘못된 로그인 타입입니다.", 4001),
+    USER_DUPLICATED_USER_EMAIL(HttpStatus.BAD_REQUEST, "이미 존재하는 이메일입니다.", 4002),
+    USER_INVALID_EMAIL(HttpStatus.BAD_REQUEST, "이메일을 다시 확인해주세요.", 4003),
+    USER_INVALID_PASSWORD(HttpStatus.BAD_REQUEST, "비밀번호를 다시 확인해주세요", 4004),
+    USER_INVALID_EMAIL_AUTH_CODE(HttpStatus.BAD_REQUEST, "유효하지 않는 인증 코드입니다.", 4005),
+    USER_EMAIL_AUTHENTICATION_STATUS_EXPIRED(HttpStatus.NOT_FOUND, "이메일 인증을 다시 해주세요.", 4006),
 
     // comment 관련(5000번대 코드 사용)
 
@@ -44,8 +49,12 @@ public enum ErrorCode {
     TALK_DUPLICATED_USER(HttpStatus.NOT_ACCEPTABLE, "중복된 사용자입니다.", 6004),
 
 
-    // 원인 불명 에러(7000번대 코드 사용)
-    UNKNOWN_ERROR(HttpStatus.BAD_GATEWAY, "알 수 없는 오류입니다",7001),
+    // Redis 관련 에러
+    REDIS_NOT_FOUND(HttpStatus.NOT_FOUND, "데이터를 찾을 수 없습니다.", 7001),
+
+
+    // 원인 불명 에러(8000번대 코드 사용)
+    UNKNOWN_ERROR(HttpStatus.BAD_GATEWAY, "알 수 없는 오류입니다",8001),
     ;
 
 
