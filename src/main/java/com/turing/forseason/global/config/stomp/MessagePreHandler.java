@@ -33,29 +33,30 @@ public class MessagePreHandler implements ChannelInterceptor {
 
         // 헤더 뽑기
         StompHeaderAccessor headerAccessor = StompHeaderAccessor.wrap(message);
+
         // 메세지 프레임이 DISCONNECT라면, JWT토큰 검사 필요없음. (어차피 연결헤제하려는 메세지이기 때문)
         if(StompCommand.DISCONNECT.equals(headerAccessor.getCommand()))return message;
 
 
-        // Jwt 헤더 뽑아내기
-        String jwtHeader = headerAccessor.getFirstNativeHeader(JwtTokenProvider.HEADER_STRING);
-
-        // JWT 헤더가 없거나 bearer가 아닐경우
-        if(jwtHeader == null || !jwtHeader.startsWith(JwtTokenProvider.TOKEN_PREFIX)){
-            throw new StompException(StompErrorCode.INVALID_TOKEN);
-        }
-        else{
-            String token = jwtHeader.replace(JwtTokenProvider.TOKEN_PREFIX, "");
-
-            try {
-                // 토큰 유효성 검사
-                tokenProvider.validateToken(token);
-            } catch (TokenExpiredException e) {
-                // 토큰 만료시
-                throw new StompException(StompErrorCode.INVALID_TOKEN_EXPIRED);
-            } catch (JWTVerificationException e) {
-                // 토큰 유효하지 않을 시
+        // 소켓이 처음 연결될때만 JWT 토큰 검증.
+        if(StompCommand.CONNECTED.equals(headerAccessor.getCommand())){
+            String jwtHeader = headerAccessor.getFirstNativeHeader(JwtTokenProvider.HEADER_STRING);
+            if(jwtHeader == null || !jwtHeader.startsWith(JwtTokenProvider.TOKEN_PREFIX)){
                 throw new StompException(StompErrorCode.INVALID_TOKEN);
+            }
+            else{
+                String token = jwtHeader.replace(JwtTokenProvider.TOKEN_PREFIX, "");
+
+                try {
+                    // 토큰 유효성 검사
+                    tokenProvider.validateToken(token);
+                } catch (TokenExpiredException e) {
+                    // 토큰 만료시
+                    throw new StompException(StompErrorCode.INVALID_TOKEN_EXPIRED);
+                } catch (JWTVerificationException e) {
+                    // 토큰 유효하지 않을 시
+                    throw new StompException(StompErrorCode.INVALID_TOKEN);
+                }
             }
         }
 
