@@ -40,4 +40,12 @@ public class AuthService {
 
         return jwtTokenDto;
     }
+
+    public void deprecateTokens(JwtTokenDto jwtTokenDto) {
+        String accessToken = jwtTokenDto.getAccessToken().replace(JwtTokenProvider.TOKEN_PREFIX, "");
+        String refreshToken = jwtTokenDto.getRefreshToken();
+
+        redisService.setValueWithTTL(accessToken, "Deprecated", 30L, TimeUnit.MINUTES);
+        redisService.setValueWithTTL(refreshToken, "Deprecated", 7L, TimeUnit.DAYS);
+    }
 }

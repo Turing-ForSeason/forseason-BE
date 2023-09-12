@@ -154,8 +154,7 @@ public class KakaoAuthService {
         // 서비스 로그아웃(카카오)
         UserEntity user = principalDetails.getUser();
 
-        if(user.getLoginType()!= LoginType.KAKAO)
-            throw new CustomException(ErrorCode.USER_INVALID_LOGIN_TYPE);
+        if(user.getLoginType()!= LoginType.KAKAO) return;
 
         OauthToken oauthToken = getOauthToken(user.getUserId());
         if(oauthToken == null) return;

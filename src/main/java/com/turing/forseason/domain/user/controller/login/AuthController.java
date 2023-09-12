@@ -76,10 +76,12 @@ public class AuthController {
     }
 
 
-    @GetMapping("/logout/service")
-    public ApplicationResponse<String> serviceLogout(@AuthenticationPrincipal PrincipalDetails principalDetails) {
-        // 서비스 로그아웃 (토큰 만료시키기)
+    @PostMapping("/logout/service")
+    public ApplicationResponse<String> serviceLogout(@AuthenticationPrincipal PrincipalDetails principalDetails,
+                                                     @RequestBody JwtTokenDto jwtTokenDto) {
+        // 로그아웃: JwtToken 만료시키기 & 카카오 로그인일 경우, OauthToken 또한 만료시키기.
         System.out.println("서비스 로그아웃");
+        authService.deprecateTokens(jwtTokenDto);
         kakaoAuthService.serviceLogout(principalDetails);
         return ApplicationResponse.ok(ErrorCode.SUCCESS_OK, "서비스 로그아웃 되었습니다.");
     }
@@ -122,6 +124,7 @@ public class AuthController {
 
         return ApplicationResponse.ok(ErrorCode.SUCCESS_OK, jwtTokenDto);
     }
+
 
     // 밑의 코드들은 전부 Test 용
     @GetMapping("test/oauthtoken/expried")
