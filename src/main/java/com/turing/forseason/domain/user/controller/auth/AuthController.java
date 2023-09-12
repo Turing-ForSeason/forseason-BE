@@ -1,4 +1,4 @@
-package com.turing.forseason.domain.user.controller.login;
+package com.turing.forseason.domain.user.controller.auth;
 
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.interfaces.DecodedJWT;
