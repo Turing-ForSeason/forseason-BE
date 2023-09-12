@@ -125,7 +125,7 @@ public class UserService {
             throw new CustomException(ErrorCode.UNKNOWN_ERROR);
         }
 
-        redisService.setValueWithTTL(email, authCode, 30, TimeUnit.MINUTES);
+        redisService.setValueWithTTL(email, authCode, 7L, TimeUnit.DAYS);
     }
 
 
@@ -216,7 +216,6 @@ public class UserService {
         System.out.println(profile);
 
         UserEntity user = null;
-        System.out.println(profile);
 
         try {
             user = userRepository.findByUserEmail(profile.getKakao_account().getEmail()).get();
@@ -243,7 +242,7 @@ public class UserService {
 
             userRepository.save(user);
         }
-        redisService.setValueWithTTL(user.getUserId().toString(), oauthToken, 1L, TimeUnit.HOURS);
+        redisService.setValueWithTTL(user.getUserId().toString(), oauthToken, 7L, TimeUnit.DAYS);
 
         return tokenProvider.generateToken(user);
 
@@ -268,12 +267,14 @@ public class UserService {
 
     public void serviceLogout(PrincipalDetails principalDetails){
         // 서비스 로그아웃(카카오)
+        UserEntity user = principalDetails.getUser();
 
-        if(principalDetails.getUser().getLoginType()!=LoginType.KAKAO)
+        if(user.getLoginType()!=LoginType.KAKAO)
             throw new CustomException(ErrorCode.USER_INVALID_LOGIN_TYPE);
 
-        OauthToken oauthToken = (OauthToken) redisService.getValue(principalDetails.getUser().getUserId().toString());
-        // OauthToken이 널인지 아닌지 확인해야됨.
+        OauthToken oauthToken = getOauthToken(user.getUserId());
+        if(oauthToken == null) return;
+
         System.out.println(oauthToken);
 
         RestTemplate rt = new RestTemplate();
@@ -291,28 +292,33 @@ public class UserService {
             );
 
             System.out.println("회원번호 " + response.getBody() + " 로그아웃");
-            redisService.deleteValue(principalDetails.getUser().getUserId().toString());
+            redisService.deleteValue(user.getUserId().toString());
 
         } catch (Exception e) {
-            throw new CustomException(ErrorCode.AUTH_EXPIRED_ACCESS_TOKEN); // 로그아웃 추가 해야함
+            throw new CustomException(ErrorCode.AUTH_EXPIRED_ACCESS_TOKEN);
         }
 
     }
 
-    public boolean isExpired(OauthToken oauthToken) {
+    public boolean isExpired(Long userId) {
 
         // OauthToken 정보를 받아와서 만료됐는지 검사
-        // 만료되었으면 ture, 아직 유효하면 false
+        // 만료되었으면 true, 아직 유효하면 false
+        OauthToken oauthToken = (OauthToken) redisService.getValue(userId.toString());
+        if (oauthToken==null) return true;
+
         RestTemplate rt = new RestTemplate();
 
         HttpHeaders headers = new HttpHeaders();
         headers.add("Authorization", "Bearer " + oauthToken.getAccess_token());
 
+        HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<>(null, headers);
+
         try {
             ResponseEntity<OauthTokenInfoRes> response = rt.exchange(
                     "https://kapi.kakao.com/v1/user/access_token_info",
                     HttpMethod.GET,
-                    null,
+                    request,
                     OauthTokenInfoRes.class
             );
             return false;
@@ -327,11 +333,13 @@ public class UserService {
         }
     }
 
-    public OauthToken getRefresh(OauthToken oauthToken) {
+    public OauthToken getRefresh(Long userId) {
 
         // OauthToken을 refresh하는 메서드.
-        RestTemplate rt = new RestTemplate();
+        OauthToken oauthToken = (OauthToken) redisService.getValue(userId.toString());
+        if(oauthToken == null) return null;
 
+        RestTemplate rt = new RestTemplate();
         HttpHeaders headers = new HttpHeaders();
         headers.add("Content-type", "application/x-www-form-urlencoded;charset=utf-8");
 
@@ -351,6 +359,23 @@ public class UserService {
         );
         OauthToken refreshOauthToken = refreshResponse.getBody();
         refreshOauthToken.setScope(oauthToken.getScope());
+
+        if (refreshOauthToken.getRefresh_token() == null) {
+            refreshOauthToken.setRefresh_token(oauthToken.getRefresh_token());
+        }
+        redisService.setValueWithTTL(userId.toString(), refreshOauthToken, 7L, TimeUnit.DAYS);
+
         return refreshOauthToken;
+    }
+
+    public OauthToken getOauthToken(Long userId) {
+        OauthToken oauthToken;
+        if (isExpired(userId)) {
+            oauthToken = getRefresh(userId);
+        }else {
+            oauthToken = (OauthToken) redisService.getValue(userId.toString());
+        }
+
+        return oauthToken;
     }
 }

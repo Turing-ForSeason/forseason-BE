@@ -2,6 +2,7 @@ package com.turing.forseason.domain.user.controller.login;
 
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.interfaces.DecodedJWT;
+import com.turing.forseason.domain.user.domain.KakaoProfile;
 import com.turing.forseason.domain.user.dto.EmailVerificationDto;
 import com.turing.forseason.domain.user.dto.SignInRequestDto;
 import com.turing.forseason.domain.user.dto.SignUpRequestDto;
@@ -13,9 +14,11 @@ import com.turing.forseason.global.errorException.ErrorCode;
 import com.turing.forseason.global.jwt.JwtTokenProvider;
 import com.turing.forseason.global.jwt.OauthToken;
 import com.turing.forseason.global.jwt.PrincipalDetails;
+import com.turing.forseason.global.redis.RedisService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.parameters.P;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
@@ -25,6 +28,7 @@ import javax.servlet.http.HttpServletRequest;
 @RequiredArgsConstructor
 public class UserController {
     private final UserService userService;
+    private final RedisService redisService;
 
     @GetMapping("/api/login/oauth2/code/kakao")
     public ApplicationResponse<String> Login(@RequestParam("code") String code) {
@@ -106,6 +110,34 @@ public class UserController {
         System.out.println(jwtToken);
 
         return ApplicationResponse.ok(ErrorCode.SUCCESS_OK, JwtTokenProvider.TOKEN_PREFIX + jwtToken);
+    }
+
+
+    // 밑의 코드들은 전부 Test 용
+    @GetMapping("test/oauthtoken/expried")
+    public ApplicationResponse<String> test1(@AuthenticationPrincipal PrincipalDetails principalDetails) {
+        UserEntity user = principalDetails.getUser();
+        boolean isExpired = userService.isExpired(user.getUserId());
+
+        return ApplicationResponse.ok(ErrorCode.SUCCESS_OK, "" + isExpired);
+    }
+
+    @GetMapping("test/oauthtoken/refresh")
+    public ApplicationResponse<OauthToken> test2(@AuthenticationPrincipal PrincipalDetails principalDetails) {
+        UserEntity user = principalDetails.getUser();
+        OauthToken newOauthToken = userService.getRefresh(user.getUserId());
+
+        return ApplicationResponse.ok(ErrorCode.SUCCESS_OK, newOauthToken);
+    }
+
+    @GetMapping("test/oauthtoken/profile")
+    public ApplicationResponse<KakaoProfile> test3(@AuthenticationPrincipal PrincipalDetails principalDetails) {
+        UserEntity user = principalDetails.getUser();
+        OauthToken oauthToken = userService.getOauthToken(user.getUserId());
+
+        KakaoProfile kakaoProfile = userService.findProfile(oauthToken);
+
+        return ApplicationResponse.ok(ErrorCode.SUCCESS_OK, kakaoProfile);
     }
 }
 
