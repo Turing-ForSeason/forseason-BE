@@ -70,7 +70,7 @@ public class UserService {
 
     public void signUpUser(SignUpRequestDto requestDto) {
         String state = (String) redisService.getValue(requestDto.getUserEmail());
-        if(!state.equals("verified")) throw new CustomException(ErrorCode.USER_EMAIL_AUTHENTICATION_STATUS_EXPIRED);
+        if(!"verified".equals(state)) throw new CustomException(ErrorCode.USER_EMAIL_AUTHENTICATION_STATUS_EXPIRED);
 
         UserEntity user = UserEntity.builder()
                 .userBoardNum(0L)
@@ -273,6 +273,7 @@ public class UserService {
             throw new CustomException(ErrorCode.USER_INVALID_LOGIN_TYPE);
 
         OauthToken oauthToken = (OauthToken) redisService.getValue(principalDetails.getUser().getUserId().toString());
+        // OauthToken이 널인지 아닌지 확인해야됨.
         System.out.println(oauthToken);
 
         RestTemplate rt = new RestTemplate();
