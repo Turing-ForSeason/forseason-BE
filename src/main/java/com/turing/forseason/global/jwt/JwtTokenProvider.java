@@ -18,7 +18,8 @@ import java.util.Date;
 @Component
 public class JwtTokenProvider {
     // 토큰 유효성 검사,발급 등등
-    public static final int EXPIRATION_TIME =  8640000;
+    public static final int ACCESS_TOKEN_EXPIRATION_TIME = 1000 * 60 * 30;
+    public static final int REFRESH_TOKEN_EXPRIATION_TIME = 1000 * 60 * 60 * 24 * 7;
     public static final String TOKEN_PREFIX = "Bearer ";
     public static final String HEADER_STRING = "Authorization";
 
@@ -31,19 +32,28 @@ public class JwtTokenProvider {
         this.userRepository = userRepository;
     }
 
-    public String generateToken(UserEntity user) {
+    public JwtTokenDto generateToken(UserEntity user) {
         long now = (new Date()).getTime();
 
         // Access Token 생성
-        Date tokenExpiresIn = new Date(now + EXPIRATION_TIME);
-        String token = JWT.create()
+        Date accessTokenExpiresIn = new Date(now + ACCESS_TOKEN_EXPIRATION_TIME);
+        String accessToken = JWT.create()
                 .withSubject(user.getUserEmail())                                       // payload "sub": "userEmail"
                 .withClaim("id", user.getUserId())                                // payload "id": "userId"
                 .withClaim("name", user.getUserNickname())                        // payload "name": "userNickname"
-                .withExpiresAt(tokenExpiresIn)
+                .withExpiresAt(accessTokenExpiresIn)
                 .sign(Algorithm.HMAC256(key));                                          // header "alg": "HS256"
 
-        return token;
+        // Refresh Token 생성
+        Date refreshTokenExpiresIn = new Date(now + REFRESH_TOKEN_EXPRIATION_TIME);
+        String refreshToken = JWT.create()
+                .withExpiresAt(refreshTokenExpiresIn)
+                .sign(Algorithm.HMAC256(key));
+
+        return JwtTokenDto.builder()
+                .accessToken(TOKEN_PREFIX + accessToken)
+                .refreshToken(refreshToken)
+                .build();
     }
 
     public Authentication getAuthentication(String token) {
