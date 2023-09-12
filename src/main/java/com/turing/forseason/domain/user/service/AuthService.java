@@ -27,7 +27,7 @@ public class AuthService {
         System.out.println(value);
         if ("Deprecated".equals(value) || !tokenProvider.validateToken(oldRefreshToken)) {
             // refresh 토큰이 블랙리스트에 존재하는지 검사 & 유효성 검사
-            throw new CustomException(ErrorCode.AUTH_INVALID_REFRESH_TOKEN);
+            throw new CustomException(ErrorCode.AUTH_DEPRECATED_REFRESH_TOKEN);
         }
 
         Long userId = Long.valueOf(value);

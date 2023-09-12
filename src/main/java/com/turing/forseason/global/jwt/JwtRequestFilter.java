@@ -45,7 +45,7 @@ public class JwtRequestFilter extends OncePerRequestFilter {
             if (StringUtils.hasText(jwt) && tokenProvider.validateToken(jwt)) {
                 // Black List에 올라와 있는지 검사.
                 if("Deprecated".equals(redisService.getValue(jwt))){
-                    request.setAttribute("exception", ErrorCode.AUTH_BANNED_ACCESS_TOKEN);
+                    request.setAttribute("exception", ErrorCode.AUTH_DEPRECATED_ACCESS_TOKEN);
                     filterChain.doFilter(request, response);
                     return;
                 }
