@@ -3,7 +3,7 @@ package com.turing.forseason.domain.user.service;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.turing.forseason.domain.user.domain.KakaoProfile;
-import com.turing.forseason.domain.user.dto.OauthTokenInfoRes;
+import com.turing.forseason.domain.user.dto.auth.OauthTokenInfoRes;
 import com.turing.forseason.domain.user.entity.LoginType;
 import com.turing.forseason.domain.user.entity.Role;
 import com.turing.forseason.domain.user.entity.UserEntity;
@@ -32,7 +32,7 @@ import java.util.concurrent.TimeUnit;
 @Transactional
 @RequiredArgsConstructor
 public class KakaoAuthService {
-    // 카카오 로그인 인증 관련 로직
+    // 카카오 로그인 관련 로직
     private final RedisService redisService;
     private final UserRepository userRepository;
     private final JwtTokenProvider tokenProvider;
@@ -145,7 +145,7 @@ public class KakaoAuthService {
         redisService.setValueWithTTL(user.getUserId().toString(), oauthToken, 7L, TimeUnit.DAYS);
 
         JwtTokenDto jwtTokenDto = tokenProvider.generateToken(user);
-        redisService.setValueWithTTL(jwtTokenDto.getRefreshToken(), user.getUserId(), 7L, TimeUnit.DAYS);
+        redisService.setValueWithTTL(jwtTokenDto.getRefreshToken(), user.getUserId().toString(), 7L, TimeUnit.DAYS);
 
         return jwtTokenDto;
     }

@@ -1,4 +1,4 @@
-package com.turing.forseason.domain.user.dto;
+package com.turing.forseason.domain.user.dto.auth;
 
 import lombok.Getter;
 import lombok.Setter;

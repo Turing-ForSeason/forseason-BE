@@ -1,8 +1,8 @@
 package com.turing.forseason.domain.user.service;
 
-import com.turing.forseason.domain.user.dto.EmailVerificationDto;
-import com.turing.forseason.domain.user.dto.SignInRequestDto;
-import com.turing.forseason.domain.user.dto.SignUpRequestDto;
+import com.turing.forseason.domain.user.dto.auth.EmailVerificationDto;
+import com.turing.forseason.domain.user.dto.auth.SignInRequestDto;
+import com.turing.forseason.domain.user.dto.auth.SignUpRequestDto;
 import com.turing.forseason.domain.user.entity.LoginType;
 import com.turing.forseason.domain.user.entity.Role;
 import com.turing.forseason.domain.user.entity.UserEntity;
@@ -24,7 +24,7 @@ import java.util.concurrent.TimeUnit;
 @Transactional
 @RequiredArgsConstructor
 public class GeneralAuthService {
-    // 일반 로그인 인증 관련 로직
+    // 일반 로그인 관련 로직
     private final RedisService redisService;
     private final UserRepository userRepository;
     private final JwtTokenProvider tokenProvider;
@@ -67,6 +67,7 @@ public class GeneralAuthService {
             throw new CustomException(ErrorCode.USER_DUPLICATED_USER_EMAIL);
         return true;
     }
+
     @Async
     public void sendEmailAuthCode(String email) {
         // 해당 메서드는 메일 전송후, 잘 전송됐는지 검사까지 하므로 매우 처리시간이 김.

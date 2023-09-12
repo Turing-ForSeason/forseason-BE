@@ -3,11 +3,13 @@ package com.turing.forseason.domain.user.controller.login;
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.interfaces.DecodedJWT;
 import com.turing.forseason.domain.user.domain.KakaoProfile;
-import com.turing.forseason.domain.user.dto.EmailVerificationDto;
-import com.turing.forseason.domain.user.dto.SignInRequestDto;
-import com.turing.forseason.domain.user.dto.SignUpRequestDto;
-import com.turing.forseason.domain.user.dto.UserDetailDto;
+import com.turing.forseason.domain.user.dto.*;
+import com.turing.forseason.domain.user.dto.auth.EmailVerificationDto;
+import com.turing.forseason.domain.user.dto.auth.ReissueRequestDto;
+import com.turing.forseason.domain.user.dto.auth.SignInRequestDto;
+import com.turing.forseason.domain.user.dto.auth.SignUpRequestDto;
 import com.turing.forseason.domain.user.entity.UserEntity;
+import com.turing.forseason.domain.user.service.AuthService;
 import com.turing.forseason.domain.user.service.GeneralAuthService;
 import com.turing.forseason.domain.user.service.KakaoAuthService;
 import com.turing.forseason.domain.user.service.UserService;
@@ -29,6 +31,7 @@ public class AuthController {
     private final UserService userService;
     private final GeneralAuthService generalAuthService;
     private final KakaoAuthService kakaoAuthService;
+    private final AuthService authService;
 
     @GetMapping("/api/login/oauth2/code/kakao")
     public ApplicationResponse<JwtTokenDto> Login(@RequestParam("code") String code) {
@@ -39,7 +42,8 @@ public class AuthController {
         System.out.println(oauthToken);
         JwtTokenDto jwtTokenDto = kakaoAuthService.saveUserAndGetToken(oauthToken);
         System.out.println("jwt 토큰 발급");
-        System.out.println(jwtTokenDto);
+        System.out.println(jwtTokenDto.getAccessToken());
+        System.out.println(jwtTokenDto.getRefreshToken());
 
         return ApplicationResponse.ok(ErrorCode.SUCCESS_CREATED, jwtTokenDto);
     }
@@ -112,6 +116,12 @@ public class AuthController {
         return ApplicationResponse.ok(ErrorCode.SUCCESS_OK, jwtTokenDto);
     }
 
+    @PostMapping("/auth/reissue")
+    public ApplicationResponse<JwtTokenDto> reissue(@RequestBody ReissueRequestDto reissueRequestDto) {
+        JwtTokenDto jwtTokenDto = authService.reissue(reissueRequestDto.getRefreshToken());
+
+        return ApplicationResponse.ok(ErrorCode.SUCCESS_OK, jwtTokenDto);
+    }
 
     // 밑의 코드들은 전부 Test 용
     @GetMapping("test/oauthtoken/expried")
