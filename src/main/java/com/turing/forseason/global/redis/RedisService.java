@@ -27,7 +27,7 @@ public class RedisService {
         ValueOperations<String, Object> valueOperations = redisTemplate.opsForValue();
         Object object = valueOperations.get(key);
 
-        if(object==null) throw new CustomException(ErrorCode.REDIS_NOT_FOUND);
+//        if(object==null) throw new CustomException(ErrorCode.REDIS_NOT_FOUND);
 
         return object;
     }

@@ -8,6 +8,7 @@ import com.turing.forseason.domain.user.entity.UserEntity;
 import com.turing.forseason.domain.user.repository.UserRepository;
 import com.turing.forseason.global.errorException.CustomException;
 import com.turing.forseason.global.errorException.ErrorCode;
+import com.turing.forseason.global.redis.RedisService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationServiceException;
@@ -29,6 +30,7 @@ import java.util.NoSuchElementException;
 @Component
 public class JwtRequestFilter extends OncePerRequestFilter {
     private final JwtTokenProvider tokenProvider;
+    private final RedisService redisService;
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
@@ -41,6 +43,13 @@ public class JwtRequestFilter extends OncePerRequestFilter {
 
             // 유효성검사
             if (StringUtils.hasText(jwt) && tokenProvider.validateToken(jwt)) {
+                // Black List에 올라와 있는지 검사.
+                if("Deprecated".equals(redisService.getValue(jwt))){
+                    request.setAttribute("exception", ErrorCode.AUTH_DEPRECATED_ACCESS_TOKEN);
+                    filterChain.doFilter(request, response);
+                    return;
+                }
+
                 Authentication authentication = tokenProvider.getAuthentication(jwt);
                 SecurityContextHolder.getContext().setAuthentication(authentication);
             } else request.setAttribute("exception", ErrorCode.JWT_ABSENCE_TOKEN);
