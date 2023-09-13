@@ -28,7 +28,7 @@ public class BoardEntity extends BaseTimeEntity {
     @Column(name = "board_contents", nullable = false, columnDefinition = "TEXT")
     private String boardContents;
 
-    @Column(name = "board_date", columnDefinition = "timestamp") // 테스트하려고 nullable = false 없애고 밑에 생성자도 추가함
+    @Column(name = "board_date", columnDefinition = "timestamp")
     private LocalDateTime boardDate;
 
     @Column(name = "board_picture", nullable = false, columnDefinition = "TEXT")
