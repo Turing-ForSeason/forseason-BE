@@ -53,7 +53,8 @@ public class SecurityConfig {
                 // 해당 URL에 대해 인증없이 접근 가능
                 .antMatchers("/api/**", "/auth/me", "/api/login/oauth2/code/kakao",
                         "https://kauth.kakao.com/oauth/token", "https://kapi.kakao.com/v2/user/me", "/stomp/talk/**",
-                        "/talk/user/delete","/signup/**", "/signin/general", "/auth/reissue").permitAll()
+                        "/talk/user/delete","/signup/**", "/signin/general", "/auth/reissue","/talk/rooms",
+                        "/talk/talklist","/board/boardlist").permitAll()
                 // 위 URL 제외하고는 모두 인증필요
                 .anyRequest().authenticated()
 

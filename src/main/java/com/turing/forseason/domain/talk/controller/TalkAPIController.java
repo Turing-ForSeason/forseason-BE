@@ -28,7 +28,7 @@ public class TalkAPIController {
 
     // 채팅방 리스트 반환
     @GetMapping("/talk/rooms")
-    public ApplicationResponse<List<TalkRoom>> getTalkRoomList(@AuthenticationPrincipal PrincipalDetails principalDetails) {
+    public ApplicationResponse<List<TalkRoom>> getTalkRoomList() {
 
         return ApplicationResponse.ok(ErrorCode.SUCCESS_OK, talkService.findAllRoom());
     }
