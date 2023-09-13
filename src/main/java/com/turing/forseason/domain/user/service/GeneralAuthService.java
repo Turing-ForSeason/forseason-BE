@@ -15,6 +15,7 @@ import com.turing.forseason.global.mail.MailService;
 import com.turing.forseason.global.redis.RedisService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.scheduling.annotation.Async;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -29,6 +30,7 @@ public class GeneralAuthService {
     private final UserRepository userRepository;
     private final JwtTokenProvider tokenProvider;
     private final MailService mailService;
+    private final PasswordEncoder passwordEncoder;
 
     public void signUpUser(SignUpRequestDto requestDto) {
         String state = (String) redisService.getValue(requestDto.getUserEmail());
@@ -38,7 +40,8 @@ public class GeneralAuthService {
                 .userBoardNum(0L)
                 .userCommentNum(0L)
                 .userEmail(requestDto.getUserEmail())
-                .userPassword(requestDto.getUserPassword())
+                // 비밀번호는 암호화하여 저장.
+                .userPassword(passwordEncoder.encode(requestDto.getUserPassword()))
                 .userNickname(requestDto.getUserNickname())
                 .userName(requestDto.getUserName())
                 .image(requestDto.getImage())
@@ -97,8 +100,9 @@ public class GeneralAuthService {
         UserEntity user = userRepository.findByUserEmail(requestDto.getUserEmail()).orElseThrow(
                 () -> new CustomException(ErrorCode.USER_INVALID_EMAIL));
 
-        if(!user.getUserPassword().equals(requestDto.getUserPassword()))
+        if (!passwordEncoder.matches(requestDto.getUserPassword(), user.getUserPassword())) {
             throw new CustomException(ErrorCode.USER_INVALID_PASSWORD);
+        }
 
         JwtTokenDto jwtTokenDto = tokenProvider.generateToken(user);
         redisService.setValueWithTTL(jwtTokenDto.getRefreshToken(), user.getUserId().toString(), 7L, TimeUnit.DAYS);
