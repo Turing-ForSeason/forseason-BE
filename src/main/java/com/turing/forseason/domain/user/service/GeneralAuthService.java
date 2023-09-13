@@ -91,7 +91,7 @@ public class GeneralAuthService {
             throw new CustomException(ErrorCode.UNKNOWN_ERROR);
         }
 
-        redisService.setValueWithTTL(email, authCode, 7L, TimeUnit.DAYS);
+        redisService.setValueWithTTL(email, authCode, 30L, TimeUnit.MINUTES);
     }
 
 
