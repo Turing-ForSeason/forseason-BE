@@ -105,7 +105,9 @@ public class AuthController {
     public ApplicationResponse<String> generalSignUp(@RequestBody SignUpRequestDto requestDto) {
         // 코드 리팩토링 필수(URI 설정, 비밀번호 암호화 등)
         System.out.println("일반 회원가입");
-        generalAuthService.signUpUser(requestDto);
+        if(generalAuthService.isDuplicatedEmail(requestDto.getUserEmail())) {
+            generalAuthService.signUpUser(requestDto);
+        }
         return ApplicationResponse.ok(ErrorCode.SUCCESS_CREATED, "회원가입 성공");
     }
 

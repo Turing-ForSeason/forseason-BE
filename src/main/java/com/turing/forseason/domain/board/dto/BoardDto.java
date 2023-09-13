@@ -4,10 +4,7 @@ import com.turing.forseason.domain.board.entity.BoardEntity;
 import lombok.*;
 
 @Getter
-@Setter
-@AllArgsConstructor
-@NoArgsConstructor
-@Builder
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class BoardDto {
     private Long boardId;
 
@@ -29,7 +26,22 @@ public class BoardDto {
 
     private String boardLocation;
 
-    private Long likeId;
+    @Builder
+    public BoardDto(Long boardId, String boardTitle, String boardContent, String boardPicture, Long boardLikeNum,
+                    Long boardCommentNum, String boardUserProfilePicture, String boardUserNickname,
+                    String boardHashtags, String boardLocation) {
+        this.boardId = boardId;
+        this.boardTitle = boardTitle;
+        this.boardContent = boardContent;
+        this.boardPicture = boardPicture;
+        this.boardLikeNum = boardLikeNum;
+        this.boardCommentNum = boardCommentNum;
+        this.boardUserProfilePicture = boardUserProfilePicture;
+        this.boardUserNickname = boardUserNickname;
+        this.boardHashtags = boardHashtags;
+        this.boardLocation = boardLocation;
+    }
+
 
     public static BoardDto entityToDto(BoardEntity boardEntity){
         BoardDto boardDto = BoardDto.builder()
@@ -43,7 +55,6 @@ public class BoardDto {
                 .boardLikeNum(boardEntity.getBoardLikeNum())
                 .boardUserNickname(boardEntity.getBoardUserNickname())
                 .boardUserProfilePicture(boardEntity.getBoardUserProfilePicture())
-                .likeId(null)
                 .build();
         return boardDto;
     }

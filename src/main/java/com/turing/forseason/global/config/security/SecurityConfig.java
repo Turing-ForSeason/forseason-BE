@@ -14,6 +14,8 @@ import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.crypto.factory.PasswordEncoderFactories;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.access.ExceptionTranslationFilter;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
@@ -51,7 +53,8 @@ public class SecurityConfig {
                 // 해당 URL에 대해 인증없이 접근 가능
                 .antMatchers("/api/**", "/auth/me", "/api/login/oauth2/code/kakao",
                         "https://kauth.kakao.com/oauth/token", "https://kapi.kakao.com/v2/user/me", "/stomp/talk/**",
-                        "/talk/user/delete","/signup/**", "/signin/general", "/auth/reissue").permitAll()
+                        "/talk/user/delete","/signup/**", "/signin/general", "/auth/reissue","/talk/rooms",
+                        "/talk/talklist","/board/boardlist").permitAll()
                 // 위 URL 제외하고는 모두 인증필요
                 .anyRequest().authenticated()
 
@@ -89,6 +92,12 @@ public class SecurityConfig {
         // 모든 경로에 대해 앞서 설정한 corsConfiguration를 적용
         source.registerCorsConfiguration("/**", corsConfiguration);
         return source;
+    }
+
+    @Bean
+    public PasswordEncoder passwordEncoder(){
+        // 비밀번호 암호화
+        return PasswordEncoderFactories.createDelegatingPasswordEncoder();
     }
 
 }

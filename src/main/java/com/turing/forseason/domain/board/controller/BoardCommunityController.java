@@ -24,9 +24,8 @@ public class BoardCommunityController {
     private final BoardService boardService;
 
     @GetMapping("/board/boardlist")
-    public ApplicationResponse<Page<BoardDto>> getBoardList(Pageable pageable , @AuthenticationPrincipal PrincipalDetails principalDetails) {
-        Page<BoardEntity> boardEntityPage = boardService.getBoardEntityPage(pageable);
-        Page<BoardDto> boardDtoPage = boardService.getBoardDtoPage(boardEntityPage, principalDetails.getUser().getUserId());
+    public ApplicationResponse<Page<BoardDto>> getBoardList(Pageable pageable) {
+        Page<BoardDto> boardDtoPage = boardService.getBoardDtoPage(pageable);
 
         return ApplicationResponse.ok(ErrorCode.SUCCESS_OK, boardDtoPage);
     }

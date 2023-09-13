@@ -53,9 +53,9 @@ public class TalkService {
 
             // 클라이언트에서 MINE은 무조건 내 채팅으로, TALK은 상대방 채팅으로 뜨게 하기 위함 (getTalks 한정)
             if (item.getTalkUserId() == userId) {
-                stompMessage.setType(StompMessage.MessageType.MINE);
+                stompMessage.defineType(StompMessage.MessageType.MINE);
             }else{
-                stompMessage.setType(StompMessage.MessageType.TALK);
+                stompMessage.defineType(StompMessage.MessageType.TALK);
             }
             stompMessageList.add(stompMessage);
         }
@@ -125,7 +125,7 @@ public class TalkService {
         }
 
         talkRoom.getUserList().put(userUUID, userId);
-        talkRoom.setUserCount(talkRoom.getUserList().size());
+        talkRoom.updateUserCount();
 
         return userUUID;
     }
@@ -134,7 +134,7 @@ public class TalkService {
         //채팅방 유저 리스트에서 삭제
         TalkRoom talkRoom = findByLocation(location);
         talkRoom.getUserList().remove(userUUID);
-        talkRoom.setUserCount(talkRoom.getUserList().size());
+        talkRoom.updateUserCount();
     }
 
     public Long getUserId(String location, String userUUID){

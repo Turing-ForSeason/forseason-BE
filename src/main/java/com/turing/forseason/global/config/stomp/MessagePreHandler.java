@@ -4,13 +4,17 @@ import com.auth0.jwt.JWT;
 import com.auth0.jwt.algorithms.Algorithm;
 import com.auth0.jwt.exceptions.JWTVerificationException;
 import com.auth0.jwt.exceptions.TokenExpiredException;
+import com.fasterxml.jackson.annotation.JsonAutoDetect;
+import com.fasterxml.jackson.annotation.PropertyAccessor;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.jsontype.impl.LaissezFaireSubTypeValidator;
 import com.turing.forseason.domain.talk.dto.StompMessage;
 import com.turing.forseason.global.errorException.StompErrorCode;
 import com.turing.forseason.global.errorException.StompException;
 import com.turing.forseason.domain.talk.service.TalkService;
 import com.turing.forseason.global.jwt.JwtTokenProvider;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.Message;
 import org.springframework.messaging.MessageChannel;
 import org.springframework.messaging.simp.stomp.StompCommand;
@@ -21,12 +25,21 @@ import org.springframework.stereotype.Component;
 import java.nio.charset.StandardCharsets;
 
 @Component
-@RequiredArgsConstructor
 public class MessagePreHandler implements ChannelInterceptor {
     // 서버가 메세지를 전달 받으면 로직 실행전에 실행되는 클래스.
     private final TalkService talkService;
-    private final ObjectMapper objectMapper = new ObjectMapper();
+    private final ObjectMapper objectMapper;
     private final JwtTokenProvider tokenProvider;
+
+    @Autowired
+    public MessagePreHandler(TalkService talkService, JwtTokenProvider tokenProvider) {
+        this.talkService = talkService;
+        this.tokenProvider = tokenProvider;
+
+        this.objectMapper = new ObjectMapper();
+        objectMapper.setVisibility(PropertyAccessor.ALL, JsonAutoDetect.Visibility.ANY);
+        objectMapper.activateDefaultTyping(LaissezFaireSubTypeValidator.instance, ObjectMapper.DefaultTyping.NON_FINAL);
+    }
 
     @Override
     public Message<?> preSend(Message<?> message, MessageChannel channel) {

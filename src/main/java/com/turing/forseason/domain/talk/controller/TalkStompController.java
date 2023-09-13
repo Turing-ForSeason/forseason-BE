@@ -56,7 +56,7 @@ public class TalkStompController {
     public void sendMessage(@Payload StompMessage stompMessage){
 
         // 서버에서 date를 추가
-        stompMessage.setDate(LocalDateTime.now());
+        stompMessage.setDateNow();
 
         // 메세지를 db에 저장
         talkService.storeTalkEntity(stompMessage);

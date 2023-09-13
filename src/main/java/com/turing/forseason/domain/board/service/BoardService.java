@@ -26,40 +26,11 @@ public class BoardService {
 
     private final UserRepository userRepository;
 
-    public Page<BoardEntity> getBoardEntityPage(Pageable pageable) {
-        return boardRepository.findAll(pageable);
-    }
 
-    public Page<BoardDto> getBoardDtoPage(Page<BoardEntity> boardEntityPage, Long userId) {
-        Page<BoardDto> boardDtoPage = boardEntityPage.map(BoardDto::entityToDto);
-        for (BoardDto item : boardDtoPage.getContent()) {
-            Optional<BoardLikeEntity> boardLikeEntity = boardLikeRepository.findByUser_UserIdAndBoard_BoardId(userId, item.getBoardId());
-            if(boardLikeEntity.isPresent())item.setLikeId(boardLikeEntity.get().getLikeId());
-            else item.setLikeId(null);
-        }
+    public Page<BoardDto> getBoardDtoPage(Pageable pageable) {
+        Page<BoardDto> boardDtoPage = boardRepository.findAll(pageable).map(BoardDto::entityToDto);
+
         return boardDtoPage;
-    }
-
-    public BoardDto entityToDto(BoardEntity boardEntity, Long userId, Long boardId) {
-        Optional<BoardLikeEntity> boardLikeEntity = boardLikeRepository.findByUser_UserIdAndBoard_BoardId(userId, boardId);
-        Long likeId;
-        if(boardLikeEntity.isPresent()) likeId = boardLikeEntity.get().getLikeId();
-        else likeId = null;
-
-        BoardDto boardDto = BoardDto.builder()
-                .boardId(boardEntity.getBoardId())
-                .boardTitle(boardEntity.getBoardTitle())
-                .boardPicture(boardEntity.getBoardPicture())
-                .boardContent(boardEntity.getBoardContents())
-                .boardHashtags(boardEntity.getBoardHashtags())
-                .boardLocation(boardEntity.getBoardLocation())
-                .boardCommentNum(boardEntity.getBoardCommentNum())
-                .boardLikeNum(boardEntity.getBoardLikeNum())
-                .boardUserNickname(boardEntity.getBoardUserNickname())
-                .boardUserProfilePicture(boardEntity.getBoardUserProfilePicture())
-                .likeId(likeId)
-                .build();
-        return boardDto;
     }
 
     public List<BoardEntity> findByUserId(Long userId) {
