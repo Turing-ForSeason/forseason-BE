@@ -142,7 +142,7 @@ public class KakaoAuthService {
 
             userRepository.save(user);
         }
-        redisService.setValueWithTTL(user.getUserId().toString(), oauthToken, 7L, TimeUnit.DAYS);
+        redisService.setValueWithTTL(user.getUserId().toString(), oauthToken, 50L, TimeUnit.DAYS); //OauthToken의 refreshToken이 대충 59일동안 유효함.
 
         JwtTokenDto jwtTokenDto = tokenProvider.generateToken(user);
         redisService.setValueWithTTL(jwtTokenDto.getRefreshToken(), user.getUserId().toString(), 7L, TimeUnit.DAYS);
@@ -210,7 +210,7 @@ public class KakaoAuthService {
             if (ex.getStatusCode() == HttpStatus.UNAUTHORIZED && ex.getResponseBodyAsString().contains("-401")) {
                 return true;
             } else {
-                throw new CustomException(ErrorCode.AUTH_INVALID_KAKAO_CODE);
+                throw new CustomException(ErrorCode.AUTH_KAKAO_SERVER_ERROR);
             }
         } catch (Exception e) {
             throw new CustomException(ErrorCode.UNKNOWN_ERROR);
@@ -247,7 +247,7 @@ public class KakaoAuthService {
         if (refreshOauthToken.getRefresh_token() == null) {
             refreshOauthToken.setRefresh_token(oauthToken.getRefresh_token());
         }
-        redisService.setValueWithTTL(userId.toString(), refreshOauthToken, 7L, TimeUnit.DAYS);
+        redisService.setValueWithTTL(userId.toString(), refreshOauthToken, 50L, TimeUnit.DAYS);
 
         return refreshOauthToken;
     }
