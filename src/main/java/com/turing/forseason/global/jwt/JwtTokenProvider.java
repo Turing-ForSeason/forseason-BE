@@ -53,7 +53,7 @@ public class JwtTokenProvider {
         return JwtTokenDto.builder()
                 .accessToken(TOKEN_PREFIX + accessToken)
                 .refreshToken(refreshToken)
-                .accessTokenExpiresIn(accessTokenExpiresIn)
+                .accessTokenExpiresIn(accessTokenExpiresIn.getTime())
                 .build();
     }
 

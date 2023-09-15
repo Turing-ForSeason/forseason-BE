@@ -12,11 +12,11 @@ import java.util.Date;
 public class JwtTokenDto {
     private String accessToken;
     private String refreshToken;
-    private Date accessTokenExpiresIn;
+    private long accessTokenExpiresIn;
 
 
     @Builder
-    public JwtTokenDto(String accessToken, String refreshToken, Date accessTokenExpiresIn) {
+    public JwtTokenDto(String accessToken, String refreshToken, long accessTokenExpiresIn) {
         this.accessToken = accessToken;
         this.refreshToken = refreshToken;
         this.accessTokenExpiresIn = accessTokenExpiresIn;
