@@ -21,10 +21,11 @@ public enum ErrorCode {
     JWT_ABSENCE_TOKEN(HttpStatus.UNAUTHORIZED, "로그인이 필요합니다.", 2005),
     AUTH_USER_NOT_FOUND(HttpStatus.NOT_FOUND, "해당하는 정보의 사용자를 찾을 수 없습니다.", 2006),
     AUTH_KAKAO_SERVER_ERROR(HttpStatus.BAD_GATEWAY, "카카오 서버가 일시적 내부 장애상태 입니다", 2007),
-    AUTH_EXPIRED_ACCESS_TOKEN(HttpStatus.UNAUTHORIZED, "만료된 엑세스 토큰입니다.", 2008),
-    AUTH_BAD_LOGOUT_REQUEST(HttpStatus.BAD_REQUEST, "잘못된 요청입니다", 2009),
-    AUTH_DEPRECATED_REFRESH_TOKEN(HttpStatus.BAD_REQUEST, "만료된 Refresh 토큰입니다.", 2010),
-    AUTH_DEPRECATED_ACCESS_TOKEN(HttpStatus.UNAUTHORIZED, "더 이상 사용되지 않는 Access 토큰입니다", 2011),
+    AUTH_EXPIRED_OAUTH_TOKEN(HttpStatus.BAD_REQUEST, "카카오로부터 정보를 받아올 수 없습니다. 다시 로그인해주세요.", 2008),
+    AUTH_EXPIRED_ACCESS_TOKEN(HttpStatus.UNAUTHORIZED, "만료된 엑세스 토큰입니다.", 2009),
+    AUTH_BAD_LOGOUT_REQUEST(HttpStatus.BAD_REQUEST, "잘못된 요청입니다", 20010),
+    AUTH_DEPRECATED_REFRESH_TOKEN(HttpStatus.BAD_REQUEST, "만료된 Refresh 토큰입니다.", 2011),
+    AUTH_DEPRECATED_ACCESS_TOKEN(HttpStatus.UNAUTHORIZED, "더 이상 사용되지 않는 Access 토큰입니다", 2012),
 
 
 

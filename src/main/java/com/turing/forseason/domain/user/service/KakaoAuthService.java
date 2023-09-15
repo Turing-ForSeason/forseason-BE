@@ -189,7 +189,7 @@ public class KakaoAuthService {
         // OauthToken 정보를 받아와서 만료됐는지 검사
         // 만료되었으면 true, 아직 유효하면 false
         OauthToken oauthToken = (OauthToken) redisService.getValue(userId.toString());
-        if (oauthToken==null) return true;
+        if (oauthToken == null) throw new CustomException(ErrorCode.AUTH_EXPIRED_OAUTH_TOKEN);
 
         RestTemplate rt = new RestTemplate();
 
@@ -221,7 +221,7 @@ public class KakaoAuthService {
 
         // OauthToken을 refresh하는 메서드.
         OauthToken oauthToken = (OauthToken) redisService.getValue(userId.toString());
-        if(oauthToken == null) return null;
+        if(oauthToken == null) throw new CustomException(ErrorCode.AUTH_EXPIRED_OAUTH_TOKEN);
 
         RestTemplate rt = new RestTemplate();
         HttpHeaders headers = new HttpHeaders();
