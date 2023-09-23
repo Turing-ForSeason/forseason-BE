@@ -18,7 +18,7 @@ public class MyPageController {
     private final UserService userService;
     private final UserRepository userRepository;
 
-    @GetMapping("/mypage/{userId}")
+    @GetMapping("/mypage")
     public ApplicationResponse<UserEntity> getUser(@AuthenticationPrincipal PrincipalDetails principalDetails) {
         //마이페이지 보기
 
@@ -27,7 +27,7 @@ public class MyPageController {
         return ApplicationResponse.ok(ErrorCode.SUCCESS_OK, user);
     }
 
-    @GetMapping("/mypage/editprofile/{userId}")
+    @GetMapping("/mypage/editprofile")
     public ApplicationResponse<UserEntity> getBeforeEditUser(@AuthenticationPrincipal PrincipalDetails principalDetails) {
         //회원정보 수정 보기
 
@@ -36,7 +36,7 @@ public class MyPageController {
         return ApplicationResponse.ok(ErrorCode.SUCCESS_OK, user);
     }
 
-    @PostMapping("/mypage/editprofile/{id}")
+    @PostMapping("/mypage/editprofile")
     public ApplicationResponse<UserEntity> editUser(@AuthenticationPrincipal PrincipalDetails principalDetails, @RequestBody UpdateUserInfoRequest request) {
         //회원정보 수정
 
