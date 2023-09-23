@@ -5,15 +5,11 @@ import com.turing.forseason.domain.user.entity.UserEntity;
 import com.turing.forseason.domain.user.repository.UserRepository;
 import com.turing.forseason.domain.user.service.UserService;
 import com.turing.forseason.global.dto.ApplicationResponse;
-import com.turing.forseason.global.errorException.CustomException;
 import com.turing.forseason.global.errorException.ErrorCode;
 import com.turing.forseason.global.jwt.PrincipalDetails;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
-
-import javax.servlet.http.HttpServletRequest;
-import java.util.Optional;
 
 @RequiredArgsConstructor
 @RestController
